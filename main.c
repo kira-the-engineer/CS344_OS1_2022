@@ -11,7 +11,7 @@ struct movie
 {
     char *title;
     char *year;
-    char *languages[5][20];
+    char *languages[5];
     char *rank;
     struct movie *next;
 };
@@ -41,13 +41,10 @@ struct movie *createMovie(char *currLine)
     strcpy(currMovie->year, token);
 
     // The next token is the languages
-    token = strtok_r(NULL, "[,", &saveptr);
+    token = strtok_r(NULL, ",", &saveptr);
     language_str = calloc(strlen(token) + 1, sizeof(char));
     printf(%s \n", language_str);
     //strcpy(language_str, token);
-    //for(int i = 0; i < 5, i++){
-	//single = strtok_r(NULL, ";", 
-    //}
 
     // The last token is the Rating/Rank
     token = strtok_r(NULL, "\n", &saveptr);
