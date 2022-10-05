@@ -26,9 +26,8 @@ struct movie *createMovie(char *currLine)
 
     // For use with strtok_r
     char *saveptr;
-
-    // Create a temporary pointer for processing the language string
-    char *language_str;
+    char* languages; // string to save all languages from a movie in
+    char* lang_str; // string for tokenized languages
 
     // The first token is the Movie title
     char *token = strtok_r(currLine, ",", &saveptr);
@@ -41,15 +40,26 @@ struct movie *createMovie(char *currLine)
     strcpy(currMovie->year, token);
 
     // The next token is the languages
-    token = strtok_r(NULL, ",", &saveptr);
-    language_str = calloc(strlen(token) + 1, sizeof(char));
-    printf(%s \n", language_str);
-    //strcpy(language_str, token);
+    token = strtok_r(NULL, ",", &saveptr); //get initial string of all languages to work on
+    languages = calloc(strlen(token) + 1, sizeof(char)); // Allocate memory for string of languages
+    strcpy(languages, token); // copy tokenized string to language_string
+
+    //Get initial token of languages
+    token = strtok_r(languages, "[;],", &saveptr);
+    for(int i = 0; i < 5; i++) { // A movie can have at most 5 languages
+	if(token != NULL){
+ 	    lang_str = calloc(strlen(token) + 1, sizeof(char));
+    	    strcpy(lang_str, token);
+	    currMovie->languages[i] = lang_str;
+            printf("%s \n", lang_str);
+	    token = strtok_r(NULL, ";],", &saveptr);
+	}	
+    }
 
     // The last token is the Rating/Rank
-    token = strtok_r(NULL, "\n", &saveptr);
-    currMovie->rank = calloc(strlen(token) + 1, sizeof(char));
-    strcpy(currMovie->rank, token);
+//    token = strtok_r(NULL, "\n", &saveptr);
+//    currMovie->rank = calloc(strlen(token) + 1, sizeof(char));
+//    strcpy(currMovie->rank, token);
 
     // Set the next node to NULL in the newly created movie entry
     currMovie->next = NULL;
@@ -84,7 +94,6 @@ struct movie *processFile(char *filePath)
     // Read the file line by line
     while ((nread = getline(&currLine, &len, moviesFile)) != -1)
     {
-	line_count++;
         // Get a new node corresponding to the current line
         struct movie *newNode = createMovie(currLine);
 
@@ -103,8 +112,9 @@ struct movie *processFile(char *filePath)
             tail->next = newNode;
             tail = newNode;
         }
+	line_count++;
     }
-    movie_count == line_count - 1;
+    movie_count = line_count - 1;
     printf("Processed file %s and parsed data for %d Movies \n", filePath, movie_count); 
     free(currLine);
     fclose(moviesFile);
@@ -118,7 +128,11 @@ struct movie *processFile(char *filePath)
 
 void printMovies(struct movie* singleMovie){
 	printf("%s, %s, ", singleMovie->title, singleMovie->year);
-	//printf("%s, ", singleMovie->languages);  
+	for(int i = 0; i < 5; i++){
+	    if(singleMovie->languages[i] != NULL){
+		printf("%s, ", singleMovie->languages[i]);
+	    }
+	}  
 	printf("%s \n", singleMovie->rank);
 }
 
