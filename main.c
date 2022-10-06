@@ -166,20 +166,22 @@ void searchLanguages(struct movie *list)
   memset(language, '\0', 20); // initialize string with null pointers 
   printf("Please enter the language for which you wish to see movies: \n");
   scanf("%s", &language); //take user input string and save it
-  int equal; // storage for return value of strcmp - if 0 strings are equal
   int eqcnt = 0; // count of matches in a given list
+  int equal;
 
   // begin loop through list
   while(list != NULL) { // while not at end of list
-	for(int i = 0; i < 5; i++) { // loop through languages array
-	   equal = strcmp(language, list->languages[i]);
+       for(int i = 0; i < 5; i++){
+	   if(list->languages[i] != NULL){
+	      equal = strcmp(language, list->languages[i]);
+	   }
 	   if(equal == 0){
 		printf("%s %s \n", list->year, list->title);
 		eqcnt++;
 		break;
 	   }
-        }  
-	list = list->next;
+       }
+       list = list->next;
   }
   
   if(eqcnt == 0){
@@ -227,7 +229,6 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
    }
    struct movie *list = processFile(argv[1]);
-  
    /* begin UI for selecting movie functions */
    mainUI(list);
 
