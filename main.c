@@ -103,7 +103,7 @@ struct movie *processFile(char *filePath)
         // Is this the first node in the linked list?
         if (head == NULL)
         {
-            // This is the first node in the linked link
+           // This is the first node in the linked link
             // Set the head and the tail to this node
             head = newNode;
             tail = newNode;
@@ -190,6 +190,29 @@ void searchLanguages(struct movie *list)
 
 }
 
+void searchYear(struct movie *list)
+{
+   int uYear = 0; // create int to store user input year
+   int convert = 0; // create int to store converted string for year in list
+   int eqcnt = 0; // create counter for equal values
+   printf("Please enter the year you want to see movies for: \n");
+   scanf("%d", &uYear);
+
+
+   while(list != NULL) {
+	if(list->year != NULL){
+            convert = atoi(list->year);
+	    if(convert == uYear) {
+	       printf("%s \n", list->title);
+	       eqcnt++;
+            }
+	}
+ 	list = list->next;
+   }
+   if(eqcnt == 0) {
+	printf("There is no data about movies released in %d \n", uYear);
+   }
+}
 
 
 /*
@@ -210,7 +233,7 @@ int mainUI(struct movie *list){
    
    	scanf("%d", &user_choice); /* get a user choice in an integer format */
    	switch(user_choice){
-		case 1: /* call year search */ reloop = 1; break;
+		case 1: searchYear(list); reloop = 1; break;
 		case 2: /* call rank func */ reloop = 1; break;
 		case 3: searchLanguages(list); reloop = 1; break;
 		case 4: printf("Exiting ...\n"); reloop = 0; break;
