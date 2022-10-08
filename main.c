@@ -1,7 +1,3 @@
-// If you are not compiling with the gcc option --std=gnu99, then
-// uncomment the following line or you might get a compiler warning
-//#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +10,18 @@ struct movie
     char *languages[5];
     char *rank;
     struct movie *next;
+};
+
+/* struct for storing the pairs of years and rankings.
+* Used to create a second linked list solely for storing
+* The highest ranked movies
+*/
+struct rankings
+{
+    int year;
+    char* title;
+    double rank;
+    struct rankings *next;
 };
 
 /* Parse the current line which is comma delimited and create a
@@ -190,6 +198,15 @@ void searchLanguages(struct movie *list)
 
 }
 
+/*
+* This function takes in a user input for a given year, 
+* searches the linked list for movies released in a given year
+* and displays their title. This is done by converting the year
+* string stored in each struct to an int and then directly comparing
+* the user input year to that int. If the ints are equal, print the 
+* information. 
+*/
+
 void searchYear(struct movie *list)
 {
    int uYear = 0; // create int to store user input year
@@ -212,6 +229,21 @@ void searchYear(struct movie *list)
    if(eqcnt == 0) {
 	printf("There is no data about movies released in %d \n", uYear);
    }
+}
+
+/*
+* This function takes in a user input for a given language, searches 
+* the LL for movies with that specific language, and then displays 
+* their year and title if they were released in the given language the
+* user input. Languages are case sensitive!! 
+*/
+
+struct rankings* rankedMovies(struct movie *list) {
+	while(list != NULL) {
+	
+
+	}
+
 }
 
 
