@@ -81,7 +81,6 @@ struct movie *createMovie(char *currLine)
 * each line of the specified file.
 */
 
-
 struct movie *processFile(char *filePath)
 {
     // Open the specified file for reading only
@@ -232,20 +231,121 @@ void searchYear(struct movie *list)
 }
 
 /*
-* This function takes in a user input for a given language, searches 
-* the LL for movies with that specific language, and then displays 
-* their year and title if they were released in the given language the
-* user input. Languages are case sensitive!! 
+* This function copies the year, ranking, and title data from
+* the existing movies linked list into a struct for a linked
+* list of the highest ranked movies 
 */
 
-struct rankings* rankedMovies(struct movie *list) {
-	while(list != NULL) {
-	
+struct rankings* createRankedMovie(struct movie *list) {
+    char *tptr; //temp pointer for use with strtod
 
-	}
+    struct rankings* tempRank = malloc(sizeof(struct rankings)); // allocate memory for a new rankings struct
 
+    tempRank->year = atoi(list->year); // get year converted to int
+    tempRank->rank = strtod(list->rank, &tptr); // get rank converted to double
+    tempRank->title = calloc(strlen(list->title) + 1, sizeof(char));
+    strcpy(tempRank->title, list->title); // copy title to ranked movie title string
+    tempRank->next = NULL;
+    return tempRank;
 }
 
+/*
+* This function creates a linked list of the highest ranked movies by iterating through
+* the already existing movies list. It compares if the years are equal, and if an entry
+* all ready exists with the same year, it will compare the two and add the highest ranked
+* movie to the list. Otherwise, if no year entry exists, it will just add a new node to the
+* list. 
+*/
+
+struct rankings* rankedMovies(struct movie *list){
+    struct rankings* head = createRankedMovie(list); // create first movie in ranked movies by using head of movies list
+    struct rankings* tail = head; // set tail to the first node initially
+    list = list->next; // initial increment to movies list
+
+    int year;
+    double rank; 
+    char *ptr;
+
+    while(list != NULL) {
+	int year = atoi(list->year);
+	double rank = strtod(list->rank, &ptr);
+
+	/* The while loop below allows for multiple loops through the list to check and replace
+	 * values up until NULL
+         */
+	while(tail->next) {
+	    if(year == tail->year) {
+	      if(rank > tail->rank){
+		    tail->title = realloc(tail->title, strlen(list->title));
+		    strcpy(tail->title, list->title);
+		    tail->rank = rank;
+		    tail->year = year;
+	       }
+	       break;
+	    }
+	    tail = tail->next;
+	}
+
+	/* Check the last link in the list for rank comparison */
+	if(year == tail->year) {
+	   if(rank > tail->rank){
+		tail->title = realloc(tail->title, strlen(list->title));
+		strcpy(tail->title, list->title);
+		tail->rank = rank;
+		tail->year = year;	
+	   }
+	   tail = tail->next;
+	}
+	else{ /* if the year does not already exist, add it to the list */
+	    struct rankings* newNode = createRankedMovie(list);
+	    tail->next = newNode;
+	}
+	tail = head; /* reset for next loop */
+	list = list->next;
+    }
+
+    return head;
+}
+
+/* simple print function to print data from a movie in the ranked movies list */
+void printRankedMovie(struct rankings* rm) {
+     printf("%d %.1f %s \n", rm->year, rm->rank, rm->title);
+}
+
+/* function for printing the whole list of ranked movies */
+void printRMList(struct rankings *list) {
+   while(list != NULL) {
+	printRankedMovie(list);
+	list = list->next;
+   }
+}
+
+/* This function frees the memory associated with the
+ * linked list of ranked movies. Mostly the title 
+ * strings
+ */
+
+void cleanRankedMovies(struct rankings* rm)
+{
+    struct rankings* temp; // create temp node ptr 
+    while(rm != NULL) {
+	temp = rm; // set head of rm to temp
+	rm = rm->next; // iterated to next link
+	free(temp->title); // free data in current link
+	free(temp); // free temp ptr
+    }
+    rm = NULL; // set rm back to NULL data
+}
+
+/*
+* This function creates a highest ranked movies list, prints the information
+* (year, rank, title) of the highest ranked movies, and then frees the list
+*/
+void displayRankedMovies(struct movie *list){
+     struct rankings *rm = rankedMovies(list); // create ranked movies list
+     printRMList(rm); 
+     cleanRankedMovies(rm);
+}
 
 /*
 *   Insert witty header here :DDDDD
@@ -266,7 +366,7 @@ int mainUI(struct movie *list){
    	scanf("%d", &user_choice); /* get a user choice in an integer format */
    	switch(user_choice){
 		case 1: searchYear(list); reloop = 1; break;
-		case 2: /* call rank func */ reloop = 1; break;
+		case 2: displayRankedMovies(list); reloop = 1; break;
 		case 3: searchLanguages(list); reloop = 1; break;
 		case 4: printf("Exiting ...\n"); reloop = 0; break;
 		default: printf("Invalid choice entered, reprompting... \n"); reloop = 1; break;
@@ -286,6 +386,6 @@ int main(int argc, char *argv[])
    struct movie *list = processFile(argv[1]);
    /* begin UI for selecting movie functions */
    mainUI(list);
-
+  
    return EXIT_SUCCESS;
 }
