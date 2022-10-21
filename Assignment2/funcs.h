@@ -20,7 +20,7 @@ struct movie
 struct movie *createMovie(char *currLine);
 
 /* Function that takes care of validating user input for which selection they want to make */
-int mainUI(struct movie *list);
+int mainUI();
 
 /* Reuse process file function from Assignment 1. This function is a slightly modified version of the
  * file processing function included in the sample code supplementing assignment 1 and can be found
