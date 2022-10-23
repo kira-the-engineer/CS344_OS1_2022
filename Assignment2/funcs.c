@@ -133,8 +133,32 @@ struct movie *processFile(char *filePath)
     return head;
 }
 
+/* Function that creates a directory and returns its name. Name is in format <ONID>.movies.<randomnumber> */
+char* createRandomDir(mode_t mode) {
+	char* directory_name = calloc(256, sizeof(char)); /* allocate memory for a string to name of created dir */
+	/* Use string concatenation to add to the char array for the directory path */
+	strcat(directory_name, ONID); /* append ONID */
+	strcat(directory_name, ".movies."); /* append '.movies.' */
+	
+	/* random number generation */
+	int random = (rand() % (MAX_RAND - MIN_RAND + 1)) + MIN_RAND; /* generates random number in 0 - 99999 inclusive */
+	char randstr[sizeof(int) * 4 + 1];  /* create 16 byte (plus null terminator) string in order to store integer */
+					    /* size of int returns 4 */
+	sprintf(randstr, "%d", random); /* convert random integer to a string using sprintf */
+	strcat(directory_name, randstr); /* append converted integer to directory name */
+	
+	if((mkdir(directory_name, mode)) == 0) { /* mkdir returns 0 on success */
+		printf("Create a directory with name %s \n", directory_name);
+		return directory_name;
+	}	
+	else {
+	  	printf("Problem creating directory \n");
+		return NULL;
+	}
+}
 
-/* Create search function for specific file in a givedn directory based around the example on 
+
+/* Create search function for specific file in a given directory based around the example on 
  * this replit: https://replit.com/@cs344/35statexamplec#main.c. Returns 1 if desired file
  * is found, otherwise returns 0 */
 int searchFile(char *directory, char *filename) {
@@ -178,7 +202,7 @@ int mainUI(){
 			scanf("%s", filename); /* save user defined filename. Expects file extension */
 
 			if(searchFile(cwd, filename)) { /* if the searchFile function returned 1, file was found */
-				//call directory creating function here
+				createRandomDir(0755); //call directory creating function here
 				struct movie *list = processFile(filename); /* process found file */
 				printList(list); /* print movies for test purposes */
 				reloop = 0;

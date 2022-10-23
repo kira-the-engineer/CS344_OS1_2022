@@ -7,6 +7,10 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+#define ONID "kopchok"
+#define MAX_RAND 99999
+#define MIN_RAND 0
+
 /* Reuse Movie Struct from Assignment 1 to hold info from CSV */
 struct movie
 {
