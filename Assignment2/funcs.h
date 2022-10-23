@@ -22,10 +22,8 @@ struct movie *createMovie(char *currLine);
 /* Function that takes care of validating user input for which selection they want to make */
 int mainUI();
 
-/* Reuse process file function from Assignment 1. This function is a slightly modified version of the
- * file processing function included in the sample code supplementing assignment 1 and can be found
- * on this replit: https://replit.com/@cs344/studentsc#main.c
- */
+/* Function that takes care of processing a file at a given path and adding its contents to a 
+ * linked list of movies */
 struct movie *processFile(char *filePath);
 
 /* Reuse functions for printing movies and printing the linked list of movies for testing purposes.
@@ -51,7 +49,7 @@ char* getlargestCSV(char* dirpath);
 /* Function thay returns filepath of the CSV file in the current director with the
  * smallest file size. Expects path to directory to look in. Uses stat function 
  */
-char * gestsmallestCSV(char* dirpath);
+char* getsmallestCSV(char* dirpath);
 
 /* Creates random directory within the current directory with specified permissions.
  * References Exploration resource on Canvas about directories. Returns name of
