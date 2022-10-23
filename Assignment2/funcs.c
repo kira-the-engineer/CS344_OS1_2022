@@ -176,6 +176,52 @@ int searchFile(char *directory, char *filename) {
    return 0;
 }
 
+
+
+/* Function that returns the filepath of the CSV file in the given directory with the smallest file size. Expects a path to the directory to 
+ * look in. Uses stat function to get metadata about each CSV like shown in the replit here: https://replit.com/@cs344/35statexamplec#main.c.
+ * Also references code on how to get characters at end of string on this forum post: https://cboard.cprogramming.com/c-programming/371-how-do
+ * -i-get-last-character-string.html#post3525 */
+char* getSmallestCSV(char* directory) {
+	DIR *currDir = opendir(directory); /* Opens passed in directory */
+	struct dirent *aDir; /* create struct to store directory entries returned by readdir */
+	struct stat dirStats; /* create struct to store data returned by stat */
+	int size = 0; /* create int to store size of file */ 
+	int count = 0; /* store count of csvs in dir */
+	char smallest[256]; /* create buffer to store filename of the csv with smallest size */
+	int prefix, suffix; /* create ints to store return value of strncmp */
+	char getsuffix[5]; /* create temp string to store file extension */
+	char *smallCSV = calloc(256, sizeof(char)); /* create pointer to filename of smallest csv to return */
+
+
+	while((aDir = readdir(currDir)) != NULL) { /* loop through entries in directory */
+		prefix = strncmp("movies_", aDir->d_name, strlen("movies_")); /* compare prefix of file to see if it matches the required prefix */
+		sprintf(getsuffix, "%s", aDir->d_name + (strlen(aDir->d_name) - strlen(".csv"))); /* Get characters at end of string by setting pointer
+											           * to end of string and subtracting off the size of ".csv") */
+		suffix = strncmp(".csv", getsuffix, strlen(".csv"));
+
+		if(prefix == 0 && suffix == 0){ /* if both the prefix and suffix match */
+			stat(aDir->d_name, &dirStats); /* get stats of entry in directory */
+			if(count == 0) { /* if this is the first csv encountered */		
+				size = dirStats.st_size;
+				strcpy(smallest, aDir->d_name);
+				count++;
+			}
+			else {
+				if(dirStats.st_size < size){ /* Only update smallest size when new smallest csv is encountered */
+ 					size = dirStats.st_size;
+					strcpy(smallest, aDir->d_name);
+					count++;
+				}
+			}
+		}
+
+	}
+	smallCSV = smallest;
+	closedir(currDir);
+	return smallCSV;	
+}
+
 /* Function that creates text files in a given directory from a given list of movies. Add movies to files based on their year, 
  * and create files if the year hasn't already been made */
 void createMoviesTxt(char* directory, struct movie *list) {
@@ -204,7 +250,13 @@ int mainUI(){
 	scanf("%d", &user_choice); /* get a user choice in an integer format */
 	switch(user_choice){
 		case 1: printf("largest \n"); reloop = 0; break;
-		case 2: printf("smallest \n"); reloop = 0; break;
+		case 2:
+		{
+			char* smallest = getSmallestCSV(cwd); /* search for smallest csv in current dir */
+			printf("The smallest csv is: %s \n", smallest);
+			reloop = 0; 
+			break;
+		} 
 		case 3:
 		{
 			char* filename = calloc(256, sizeof(char)); /* Allocate space for filename string. UNIX has max char limit for filnames of 255 */
