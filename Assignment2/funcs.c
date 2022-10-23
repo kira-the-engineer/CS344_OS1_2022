@@ -188,7 +188,6 @@ char* getSmallestCSV(char* directory) {
 	struct stat dirStats; /* create struct to store data returned by stat */
 	int size = 0; /* create int to store size of file */ 
 	int count = 0; /* store count of csvs in dir */
-	char smallest[256]; /* create buffer to store filename of the csv with smallest size */
 	int prefix, suffix; /* create ints to store return value of strncmp */
 	char getsuffix[5]; /* create temp string to store file extension */
 	char *smallCSV = calloc(256, sizeof(char)); /* create pointer to filename of smallest csv to return */
@@ -204,20 +203,19 @@ char* getSmallestCSV(char* directory) {
 			stat(aDir->d_name, &dirStats); /* get stats of entry in directory */
 			if(count == 0) { /* if this is the first csv encountered */		
 				size = dirStats.st_size;
-				strcpy(smallest, aDir->d_name);
+				strcpy(smallCSV, aDir->d_name);
 				count++;
 			}
 			else {
 				if(dirStats.st_size < size){ /* Only update smallest size when new smallest csv is encountered */
  					size = dirStats.st_size;
-					strcpy(smallest, aDir->d_name);
+					strcpy(smallCSV, aDir->d_name);
 					count++;
 				}
 			}
 		}
 
 	}
-	smallCSV = smallest;
 	closedir(currDir);
 	return smallCSV;	
 }
@@ -253,7 +251,8 @@ int mainUI(){
 		case 2:
 		{
 			char* smallest = getSmallestCSV(cwd); /* search for smallest csv in current dir */
-			printf("The smallest csv is: %s \n", smallest);
+			struct movie *list = processFile(smallest); /* process smallest file */
+			printList(list); //test print
 			reloop = 0; 
 			break;
 		} 
@@ -266,7 +265,7 @@ int mainUI(){
 			if(searchFile(cwd, filename)) { /* if the searchFile function returned 1, file was found */
 				char* dirname = createRandomDir(0755); /* creates directory, returns its name */
 				struct movie *list = processFile(filename); /* process found file */
-				printList(list); /* print movies for test purposes */
+				printList(list); // test print
 				reloop = 0;
 			}  
 			else {
