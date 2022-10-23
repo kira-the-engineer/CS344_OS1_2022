@@ -265,8 +265,37 @@ char *getLargestCSV(char *directory) {
  * and create files if the year hasn't already been made */
 void createMoviesTxt(char* directory, struct movie *list) {
 	char *filename = calloc(256, sizeof(char)); /* UNIX has max char limit for filenames of 255, allocate space */
+	strcat(filename, "./"); /* append path to filename */
+	strcat(filename, directory); /* append directory name to path */
+	strcat(filename, "/"); /* append seperator after directory name */
+	struct movie *tmp = list; /* create temporary pointer to keep track of one ahead current in list of movies */
+	int fd; /* file descriptor */
 	
 	while(list != NULL) { /* loop through csv files to compare years and create files for each */
+ 		strcat(filename, list->year); /* Append year to filename */
+		strcat(filename, ".txt"); /* Append ".txt" to filename */
+		fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0640); /* Opens file to write append to */
+		/* Used cheatsheet for perms octal from here: https://github.com/lansana/unix-permissions-cheat-sheet */
+			
+		/* error check file open */
+		if(fd == -1){
+			 printf("Error on file creation \n");
+			 return 1;
+		}
+
+		/* write movie title to newly created file */
+		write(fd, list->title, strlen(list->title) + 1); /* Write title of movie to newly created file */
+
+		while(tmp->next) {
+			if(tmp->year == list->year){ /* if year existed at previous node */
+				write(fd, tmp->title, strlen(tmp->title) + 1); /* write title of movie to already created file */
+				list = list->next; /* increment prev pointer */
+				tmp = tmp->next; /* increment current pointer */
+			}
+
+		}
+		tmp = tmp->next;
+		list = list->next;
 	}	
 }
 
@@ -321,6 +350,7 @@ int mainUI(){
 				if(dirname != NULL) { /* make sure directory was properly created */
 					struct movie *list = processFile(filename); /* process found file */
 					printList(list); // test print
+					createMoviesTxt(dirname, list);
 				}
 				reloop = 0;
 			}  
