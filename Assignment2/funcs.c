@@ -176,9 +176,19 @@ int searchFile(char *directory, char *filename) {
    return 0;
 }
 
+/* Function that creates text files in a given directory from a given list of movies. Add movies to files based on their year, 
+ * and create files if the year hasn't already been made */
+void createMoviesTxt(char* directory, struct movie *list) {
+	char *filename = calloc(256, sizeof(char)); /* UNIX has max char limit for filenames of 255, allocate space */
+	
+	while(list != NULL) { /* loop through csv files to compare years and create files for each */
+	}	
+}
+
+
 /* A slightly modified version of the UI created for Assignment 1. Takes a user input for which file they
- * want to process, except for the exiting loop is controlled by the main function. Expects integer 
- * inputs for user choice */
+ * want to process, except for the exiting loop is controlled by main.c. Expects integer inputs for 
+ * user choice */
 int mainUI(){ 
    int user_choice = 0; /* create variable to store user choice */
    int reloop = 1;	/* create int to keep user in this loop until a correct choice is selected */
@@ -197,12 +207,12 @@ int mainUI(){
 		case 2: printf("smallest \n"); reloop = 0; break;
 		case 3:
 		{
-			char* filename = calloc(256, sizeof(char)); /* Allocate space for filename string. UNIX has max char limit for files of 255 */
+			char* filename = calloc(256, sizeof(char)); /* Allocate space for filename string. UNIX has max char limit for filnames of 255 */
 			printf("Enter the complete file name: \n");
 			scanf("%s", filename); /* save user defined filename. Expects file extension */
 
 			if(searchFile(cwd, filename)) { /* if the searchFile function returned 1, file was found */
-				createRandomDir(0755); //call directory creating function here
+				char* dirname = createRandomDir(0755); /* creates directory, returns its name */
 				struct movie *list = processFile(filename); /* process found file */
 				printList(list); /* print movies for test purposes */
 				reloop = 0;

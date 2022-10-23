@@ -62,3 +62,10 @@ char* getsmallestCSV(char* dirpath);
 char* createRandomDir(mode_t mode);
 
 
+/* Creates text files in a given directory that sort a given list of movies by year.
+ * References lecture 2.4, slide 12 for the syntax of creating files using O_CREAT.
+ * Also reuses some of the searching functionality from Assignment 1 to append each
+ * movie to their correct file
+ */
+
+void createMovieTxts(char* directory, struct movie *list);
