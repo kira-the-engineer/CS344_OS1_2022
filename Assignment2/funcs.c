@@ -220,6 +220,47 @@ char* getSmallestCSV(char* directory) {
 	return smallCSV;	
 }
 
+/* Essentially clone of getSmallestCSV function, except comparison is whether the size of the current entry in the directory is greater
+ * than the current stored size */
+char *getLargestCSV(char *directory) {
+	DIR *currDir = opendir(directory); /* Opens passed in directory */
+	struct dirent *aDir; /* create struct to store directory entries returned by readdir */
+	struct stat dirStats; /* create struct to store data returned by stat */
+	int size = 0; /* create int to store size of file */ 
+	int count = 0; /* store count of csvs in dir */
+	int prefix, suffix; /* create ints to store return value of strncmp */
+	char getsuffix[5]; /* create temp string to store file extension */
+	char *largeCSV = calloc(256, sizeof(char)); /* create pointer to filename of largest csv to return */
+
+
+	while((aDir = readdir(currDir)) != NULL) { /* loop through entries in directory */
+		prefix = strncmp("movies_", aDir->d_name, strlen("movies_")); /* compare prefix of file to see if it matches the required prefix */
+		sprintf(getsuffix, "%s", aDir->d_name + (strlen(aDir->d_name) - strlen(".csv"))); /* Get characters at end of string by setting pointer
+											           * to end of string and subtracting off the size of ".csv") */
+		suffix = strncmp(".csv", getsuffix, strlen(".csv"));
+
+		if(prefix == 0 && suffix == 0){ /* if both the prefix and suffix match */
+			stat(aDir->d_name, &dirStats); /* get stats of entry in directory */
+			if(count == 0) { /* if this is the first csv encountered */		
+				size = dirStats.st_size;
+				strcpy(largeCSV, aDir->d_name);
+				count++;
+			}
+			else {
+				if(dirStats.st_size > size){ /* Only update smallest size when new largest csv is encountered */
+ 					size = dirStats.st_size;
+					strcpy(largeCSV, aDir->d_name);
+					count++;
+				}
+			}
+		}
+
+	}
+	closedir(currDir);
+	return largeCSV;
+
+}
+
 /* Function that creates text files in a given directory from a given list of movies. Add movies to files based on their year, 
  * and create files if the year hasn't already been made */
 void createMoviesTxt(char* directory, struct movie *list) {
@@ -247,12 +288,25 @@ int mainUI(){
 
 	scanf("%d", &user_choice); /* get a user choice in an integer format */
 	switch(user_choice){
-		case 1: printf("largest \n"); reloop = 0; break;
+		case 1:
+		{
+			char* dirname = createRandomDir(0755); /* creates directory, returns its name */
+			if(dirname != NULL) { /* make sure directory was created successfully */
+				char* large = getLargestCSV(cwd); /* search for largest csv in current dir */
+				struct movie *list = processFile(large); /* process smallest file */
+				printList(list); //test print
+			}
+			reloop = 0;
+			break;
+		}
 		case 2:
 		{
-			char* smallest = getSmallestCSV(cwd); /* search for smallest csv in current dir */
-			struct movie *list = processFile(smallest); /* process smallest file */
-			printList(list); //test print
+			char* dirname = createRandomDir(0755); /* creates directory, returns its name */
+			if(dirname != NULL) { /* make sure directory was properly created */
+				char* smallest = getSmallestCSV(cwd); /* search for smallest csv in current dir */
+				struct movie *list = processFile(smallest); /* process smallest file */
+				printList(list); //test print
+			}
 			reloop = 0; 
 			break;
 		} 
@@ -264,8 +318,10 @@ int mainUI(){
 
 			if(searchFile(cwd, filename)) { /* if the searchFile function returned 1, file was found */
 				char* dirname = createRandomDir(0755); /* creates directory, returns its name */
-				struct movie *list = processFile(filename); /* process found file */
-				printList(list); // test print
+				if(dirname != NULL) { /* make sure directory was properly created */
+					struct movie *list = processFile(filename); /* process found file */
+					printList(list); // test print
+				}
 				reloop = 0;
 			}  
 			else {

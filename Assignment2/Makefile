@@ -9,3 +9,6 @@ funcs.o: funcs.h funcs.c
 
 clean:
 	rm movies_by_year main.o funcs.o
+
+rmdir:
+	rm -r -f kopchok.movies.*
