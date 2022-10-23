@@ -1,31 +1,5 @@
 #include "funcs.h"
 
-
-/* A slightly modified version of the UI created for Assignment 1. Takes a user input for which file they
- * want to process, except for the exiting loop is controlled by the main function. Expects integer 
- * inputs for user choice */
-int mainUI(){ 
-   int user_choice = 0; /* create variable to store user choice */
-   int reloop = 1;	/* create int to keep user in this loop until a correct choice is selected */  
-  
-   while(reloop) {
-	printf("Which file would you like to process? \n");
-        printf("1: Process the largest file in the directory \n");
-  	printf("2: Process the smallest file in the directory \n");
-   	printf("3: Process a specific file \n");
-   	printf("Please enter a choice 1-3: \n");
-
-	scanf("%d", &user_choice); /* get a user choice in an integer format */
-	switch(user_choice){
-		case 1: printf("largest \n"); reloop = 0; break;
-		case 2: printf("smallest \n"); reloop = 0; break;
-		case 3: printf("search \n"); reloop = 0; break;
-		default: printf("Invalid choice entered, reprompting... \n"); reloop = 1; break;
-   	}
-   }
-   return 0;
-}
-
 /* Parse the current line which is comma delimited and create a movie struct with the data in the 
  * line. Based on the code in the replit here: https://replit.com/@cs344/studentsc#main.c. Reused
  * from assignment 1
@@ -118,7 +92,7 @@ struct movie *processFile(char *filePath)
     struct movie *tail = NULL;
 
 
-    printf("Now processing the chosen file named %s \n, filePath");
+    printf("Now processing the chosen file named %s \n", filePath);
     // Open the specified file for reading only
     FILE *moviesFile = fopen(filePath, "r");
     
@@ -157,4 +131,67 @@ struct movie *processFile(char *filePath)
     free(currLine);
     fclose(moviesFile);
     return head;
+}
+
+
+/* Create search function for specific file in a givedn directory based around the example on 
+ * this replit: https://replit.com/@cs344/35statexamplec#main.c. Returns 1 if desired file
+ * is found, otherwise returns 0 */
+int searchFile(char *directory, char *filename) {
+    DIR *currDir = opendir(directory); /* open directory passed to function */
+    struct dirent *aDir; /* initialize struct for storing directory entries returned by readdir */
+ 
+    while((aDir = readdir(currDir)) != NULL) { /* loops through entries in directory */
+ 	if(strcmp(filename, aDir->d_name) == 0){ /* if match is found */
+		closedir(currDir); /* close current directory */ 
+		return 1;
+	}
+   }
+   /* if not found */
+   closedir(currDir); /* close directory */
+   return 0;
+}
+
+/* A slightly modified version of the UI created for Assignment 1. Takes a user input for which file they
+ * want to process, except for the exiting loop is controlled by the main function. Expects integer 
+ * inputs for user choice */
+int mainUI(){ 
+   int user_choice = 0; /* create variable to store user choice */
+   int reloop = 1;	/* create int to keep user in this loop until a correct choice is selected */
+   char* cwd = ".";      /* create string to keep track of current working directory */   
+  
+   while(reloop) {
+	printf("Which file would you like to process? \n");
+        printf("1: Process the largest file in the directory \n");
+  	printf("2: Process the smallest file in the directory \n");
+   	printf("3: Process a specific file \n");
+   	printf("Please enter a choice 1-3: \n");
+
+	scanf("%d", &user_choice); /* get a user choice in an integer format */
+	switch(user_choice){
+		case 1: printf("largest \n"); reloop = 0; break;
+		case 2: printf("smallest \n"); reloop = 0; break;
+		case 3:
+		{
+			char* filename = calloc(256, sizeof(char)); /* Allocate space for filename string. UNIX has max char limit for files of 255 */
+			printf("Enter the complete file name: \n");
+			scanf("%s", filename); /* save user defined filename. Expects file extension */
+
+			if(searchFile(cwd, filename)) { /* if the searchFile function returned 1, file was found */
+				//call directory creating function here
+				struct movie *list = processFile(filename); /* process found file */
+				printList(list); /* print movies for test purposes */
+				reloop = 0;
+			}  
+			else {
+				printf("The file %s was not found. Try again \n", filename);
+				reloop = 1;
+			}
+		free(filename); /* clean up memory allocated for filename string */
+		break;
+		}  
+		default: printf("Invalid choice entered, reprompting... \n"); reloop = 1; break;
+   	}
+   }
+   return 0;
 }

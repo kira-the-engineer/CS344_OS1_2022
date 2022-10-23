@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 /* Reuse Movie Struct from Assignment 1 to hold info from CSV */
 struct movie
