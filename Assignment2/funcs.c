@@ -265,13 +265,12 @@ char *getLargestCSV(char *directory) {
  * and create files if the year hasn't already been made */
 void createMoviesTxt(char* directory, struct movie *list) {
 	char *filename = calloc(256, sizeof(char)); /* UNIX has max char limit for filenames of 255, allocate space */
-	strcat(filename, "./"); /* append path to filename */
-	strcat(filename, directory); /* append directory name to path */
-	strcat(filename, "/"); /* append seperator after directory name */
-	struct movie *tmp = list; /* create temporary pointer to keep track of one ahead current in list of movies */
 	int fd; /* file descriptor */
 	
 	while(list != NULL) { /* loop through csv files to compare years and create files for each */
+		strcat(filename, "./"); /* append path to filename */
+		strcat(filename, directory); /* append directory name to path */
+		strcat(filename, "/"); /* append seperator after directory name */
  		strcat(filename, list->year); /* Append year to filename */
 		strcat(filename, ".txt"); /* Append ".txt" to filename */
 		fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0640); /* Opens file to write append to */
@@ -284,19 +283,24 @@ void createMoviesTxt(char* directory, struct movie *list) {
 		}
 
 		/* write movie title to newly created file */
+		strcat(list->title, "\n"); /* add newline to title */
 		write(fd, list->title, strlen(list->title) + 1); /* Write title of movie to newly created file */
 
-		while(tmp->next) {
-			if(tmp->year == list->year){ /* if year existed at previous node */
-				write(fd, tmp->title, strlen(tmp->title) + 1); /* write title of movie to already created file */
-				list = list->next; /* increment prev pointer */
-				tmp = tmp->next; /* increment current pointer */
+		while(list->next) { /* while not at first node in the list */
+			if(list->year == list->next->year) {
+				strcat(list->next->title, "\n");
+			 	write(fd, list->next->title, strlen(list->next->title) + 1);
+				list = list->next;
 			}
-
+			else {
+				break;
+			}
 		}
-		tmp = tmp->next;
 		list = list->next;
-	}	
+		memset(filename, '\0', strlen(filename)); /*reset file string so it's not just appended to each time */
+		close(fd); /* close file */
+	}
+	free(filename);
 }
 
 
@@ -323,7 +327,7 @@ int mainUI(){
 			if(dirname != NULL) { /* make sure directory was created successfully */
 				char* large = getLargestCSV(cwd); /* search for largest csv in current dir */
 				struct movie *list = processFile(large); /* process smallest file */
-				printList(list); //test print
+				createMoviesTxt(dirname, list); /* create text files based on movies in list */
 			}
 			reloop = 0;
 			break;
@@ -334,7 +338,7 @@ int mainUI(){
 			if(dirname != NULL) { /* make sure directory was properly created */
 				char* smallest = getSmallestCSV(cwd); /* search for smallest csv in current dir */
 				struct movie *list = processFile(smallest); /* process smallest file */
-				printList(list); //test print
+				createMoviesTxt(dirname, list); /* create text files based on movies in list */
 			}
 			reloop = 0; 
 			break;
@@ -349,8 +353,8 @@ int mainUI(){
 				char* dirname = createRandomDir(0755); /* creates directory, returns its name */
 				if(dirname != NULL) { /* make sure directory was properly created */
 					struct movie *list = processFile(filename); /* process found file */
-					printList(list); // test print
-					createMoviesTxt(dirname, list);
+					//printList(list); // test print
+					createMoviesTxt(dirname, list); /* create text files based on movies in list */
 				}
 				reloop = 0;
 			}  
