@@ -1,6 +1,13 @@
 /* Header for built in functions besides exit (cd and status). 
  * Also includes input grabbing/parsing functions as well as struct for storing parsed data */
 
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <fcntl.h>
 
 struct command
 {
