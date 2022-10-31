@@ -21,22 +21,22 @@ struct command *processUserCmd(char* input) {
     }
     else {
          struct command *currCMD = malloc(sizeof(struct command)); /* create a new struct pointer to store a new command*/
-	 
 	 char *saveptr; /* use for strtok_r */
-	 int i; /* create counter for looping through the rest of the input string for args and filenames */
-	 int aidx = 0; /* create idx var for array of args */
+	 int aidx = 0; /* create counter for number of arguments accessed */
+	 int sidx = 0; /* create variable to store size of arg to add to array */
+	 
 
 	/* Find last index in input + check if its "&" */
 	int finalidx = strlen(input) - 1;
 	if(input[finalidx] = '&'){ /* If & is found at last place in array */
 		currCMD->background = 1; /* set flag for bg commands */
-	}
+	} //EO if
 
 	 char *token = strtok_r(input, " ", &saveptr); /* the initial token should be the command itself */
 	 currCMD->cmd = calloc(sizeof(token) + 1, sizeof(char)); /* allocate space for command string */
 	 strcpy(currCMD->cmd, token); /* Copy token to cmd string in struct */
 
-         for(i = 0; i < strlen(input) - 1, i++;){ 
+         while(token != NULL){ 
 		if((strcmp(token, "<")) == 0) { /* if char for input file is found */
 		    token = (NULL, " ", saveptr); /* move pointer forward 1 */
 		    strcpy(currCMD->inputFile, token);
@@ -46,10 +46,18 @@ struct command *processUserCmd(char* input) {
 		    strcpy(currCMD->outputFile, token);
 		}
 		else { /* add to array of args strings */
+			if(aidx < 512) {
+			    char* temp = calloc(sizeof(token) + 1, sizeof(char)); /* create temp str pointer */
+			    strcpy(temp, token); /* copy token to temp ptr */
+			    currCMD->args[aidx] = temp; /* point string pointer at aidx to temp variable */
+			    aidx++;
+			}
 		}
 
 		token = (NULL, " "); /* move to next token in input string */
-	 }
+	 } //EO while
+
+	return currCMD;
 	
-    }
+    } // EO else
 }
