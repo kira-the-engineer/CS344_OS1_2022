@@ -69,7 +69,9 @@ struct command *processUserCmd(char* input) {
 		fidx++;
 	}
 
-	if(!(strcmp(currCMD->args[fidx-1], "&"))) {
+	printf("last arg: %s \n", currCMD->args[fidx-1]);
+
+	if(currCMD->args[fidx-1][0] == '&'){
 		currCMD->background = 1; 
 	}
 	
