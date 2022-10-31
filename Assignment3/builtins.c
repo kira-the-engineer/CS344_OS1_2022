@@ -16,7 +16,7 @@
 struct command *processUserCmd(char* input) {
 
 /* First we need to check if this is a comment or blank line */
-    if(input[0] = "#" || input == NULL) { /* check if first char is the pound symbol or if input string is empty */
+    if(input[0] == '#' || input == NULL) { /* check if first char is the pound symbol or if input string is empty */
 	return NULL; /* if this function returns NULL, main will reprompt user for input */
     }
     else {
@@ -28,7 +28,7 @@ struct command *processUserCmd(char* input) {
 
 	/* Find last index in input + check if its "&" */
 	int finalidx = strlen(input) - 1;
-	if(input[finalidx] = '&'){ /* If & is found at last place in array */
+	if(input[finalidx] == '&'){ /* If & is found at last place in array */
 		currCMD->background = 1; /* set flag for bg commands */
 	} //EO if
 
@@ -38,11 +38,11 @@ struct command *processUserCmd(char* input) {
 
          while(token != NULL){ 
 		if((strcmp(token, "<")) == 0) { /* if char for input file is found */
-		    token = (NULL, " ", saveptr); /* move pointer forward 1 */
+		    token = strtok_r(NULL, " ", &saveptr); /* move pointer forward 1 */
 		    strcpy(currCMD->inputFile, token);
 		} 		
 		else if((strcmp(token, ">")) == 0) { /* if char for output file is found */
-		    token = (NULL, " ", saveptr); /* move pointer fwd 1 */
+		    token = strtok_r(NULL, " ", &saveptr); /* move pointer fwd 1 */
 		    strcpy(currCMD->outputFile, token);
 		}
 		else { /* add to array of args strings */
@@ -53,11 +53,32 @@ struct command *processUserCmd(char* input) {
 			    aidx++;
 			}
 		}
-
-		token = (NULL, " "); /* move to next token in input string */
+		
+		token = strtok_r(NULL, " ", &saveptr); /* move to next token in input string */
+	
 	 } //EO while
 
 	return currCMD;
 	
     } // EO else
+}
+
+/********************************************************************************
+ * Function that prints the command struct for testing purposes
+ ********************************************************************************/
+void printStruct(struct command *currcmd) {
+    int i;
+    if(currcmd->cmd != NULL) {
+        printf("command: %s \n", currcmd->cmd);
+    }
+    printf("args: ");
+    for(i = 0; i < 512; i++) {
+	if(currcmd->args[i] != NULL) {
+	    printf("%s, ", currcmd->args[i]);
+	}
+    }
+    printf("\n");
+    printf("background: %d \n", currcmd->background);
+    printf("input file: %s \n", currcmd->inputFile);
+    printf("output file: %s \n", currcmd->outputFile);
 }
