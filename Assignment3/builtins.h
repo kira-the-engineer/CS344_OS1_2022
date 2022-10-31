@@ -12,11 +12,11 @@
 struct command
 {
     char *cmd; /* stores cmd itself */
-    char args[512]; /* stores parsed arguments */
+    char **args[512]; /* stores parsed arguments */
     int background; /* integer that is 0 if command runs in foreground, 1 if run in background */
     char inputFile[256]; /* filename for input file */
     char outputFile[256]; /* filename for output file */
-}
+};
 
 /*********************************************************************************
  * Function prototype for a function that prints the exit status of a terminating
