@@ -21,16 +21,20 @@ struct command *processUserCmd(char* input) {
     }
     else {
          struct command *currCMD = malloc(sizeof(struct command)); /* create a new struct pointer to store a new command*/
+
+	 /* fully initialize struct */
+	 currCMD->background = 0; /* by default run in foreground */
+	 currCMD->cmd = NULL; /* set pointers to NULL */
+	 int i;
+	 for(i = 0; i < 512; i++) {
+		currCMD->args[i] = NULL;
+	 }
+	 memset(currCMD->inputFile, 256, '\0');
+	 memset(currCMD->outputFile, 256, '\0');
+
 	 char *saveptr; /* use for strtok_r */
 	 int aidx = 0; /* create counter for number of arguments accessed */
 	 int sidx = 0; /* create variable to store size of arg to add to array */
-	 
-
-	/* Find last index in input + check if its "&" */
-	int finalidx = strlen(input) - 1;
-	if(input[finalidx] == '&'){ /* If & is found at last place in array */
-		currCMD->background = 1; /* set flag for bg commands */
-	} //EO if
 
 	 char *token = strtok_r(input, " ", &saveptr); /* the initial token should be the command itself */
 	 currCMD->cmd = calloc(sizeof(token) + 1, sizeof(char)); /* allocate space for command string */
@@ -51,14 +55,25 @@ struct command *processUserCmd(char* input) {
 			    strcpy(temp, token); /* copy token to temp ptr */
 			    currCMD->args[aidx] = temp; /* point string pointer at aidx to temp variable */
 			    aidx++;
-			}
+			}	
 		}
 		
 		token = strtok_r(NULL, " ", &saveptr); /* move to next token in input string */
 	
 	 } //EO while
 
-	return currCMD;
+	/* lastly check if command is run in the background */
+	int fidx=0;
+	/* loop through array while pointer at idx isn't null to get actual number of args */
+	while(currCMD->args[fidx]) {
+		fidx++;
+	}
+
+	if(!(strcmp(currCMD->args[fidx-1], "&"))) {
+		currCMD->background = 1; 
+	}
+	
+        return currCMD;
 	
     } // EO else
 }
