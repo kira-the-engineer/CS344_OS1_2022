@@ -12,10 +12,10 @@
 struct command
 {
     char *cmd; /* stores cmd itself */
-    char *args[512]; /* stores parsed arguments */
+    char args[512]; /* stores parsed arguments */
     int background; /* integer that is 0 if command runs in foreground, 1 if run in background */
-    char *inputFile[256]; /* filename for input file */
-    char *outputFile[256]; /* filename for output file */
+    char inputFile[256]; /* filename for input file */
+    char outputFile[256]; /* filename for output file */
 }
 
 /*********************************************************************************
@@ -36,7 +36,7 @@ void changeUserDir();
  * max length of the user input as a whole can be 2048 chars. Returns a command
  * struct
  ********************************************************************************/
-struct command processUserCmd(char *input);
+struct command *processUserCmd(char *input);
 
 /********************************************************************************
  * Called in the parseUserCmd function, function prototype for a function that
