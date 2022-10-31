@@ -20,15 +20,16 @@ struct command
 
 /*********************************************************************************
  * Function prototype for a function that prints the exit status of a terminating
- * signal or the last process run in the shell
+ * signal or the last process run in the shell. Returns 0 if run before first
+ * cmd
  *********************************************************************************/
-void exitStatus(int status);
+int exitStatus(int status);
 
 /*********************************************************************************
  * Function prototype for a function that takes changes the user's directory
  * to an optionally specified argument after the "cd" command
  *********************************************************************************/
-void changeUserDir();
+void changeUserDir(char** args);
 
 /********************************************************************************
  * Function prototype for a function that parses user input into individual cmds

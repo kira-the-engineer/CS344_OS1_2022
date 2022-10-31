@@ -99,3 +99,45 @@ void printStruct(struct command *currcmd) {
     printf("input file: %s \n", currcmd->inputFile);
     printf("output file: %s \n", currcmd->outputFile);
 }
+
+/********************************************************************************
+ * Function that prints the exit status of a terminating signal or the last 
+ * process run in the shell. Based on the example in chapter 26 of the Linux
+ * Programming Interface (pages 545-546). Takes an exit status int as argument.
+ * Just returns 0 if no commands have been run yet.
+ ********************************************************************************/
+int exitStatus(int status) {
+	if(!(status == -25)) { /* if a process is run it either returns 1 or 0 for an exit code, so set to random nonzero/non-one int for checking */
+		if(WIFEXITED(status)) { /* check if termed normally */
+			printf("exit value %d\n", WEXITSTATUS(status));
+			fflush(stdout);
+		}
+		else { /* else, must be termed by signal */
+			printf("terminated by signal %d\n", WTERMSIG(status));
+			fflush(stdout);
+		}		
+	}
+	return 0;
+}
+
+/********************************************************************************
+ * Function that changes the current directory to an optional argument by the 
+ * user. Takes in arguments array as a parameter.
+ * If no directory is specified, changes to the user's home directory.
+ ********************************************************************************/
+void changeUserDir(char** args) {
+	/* First check to see if we need to go home */
+	if(args[1] == NULL || (strcmp(args[1], "~")) == 0) {
+		printf("We're going home... \n");
+		const char* home = getenv("HOME"); /* get user's home env */
+		chdir(home); /* change to home directory */
+	}
+	else {
+		printf("Switching to specified directory \n");
+		if((chdir(args[1]) == -1)) {
+			printf("Specified directory not found... \n");
+			fflush(stdout);
+		}
+	
+	}
+}
