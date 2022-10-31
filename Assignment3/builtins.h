@@ -29,7 +29,7 @@ int exitStatus(int status);
  * Function prototype for a function that takes changes the user's directory
  * to an optionally specified argument after the "cd" command
  *********************************************************************************/
-void changeUserDir(char** args);
+void changeUserDir(char** args, char* cwd);
 
 /********************************************************************************
  * Function prototype for a function that parses user input into individual cmds

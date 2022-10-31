@@ -125,19 +125,21 @@ int exitStatus(int status) {
  * user. Takes in arguments array as a parameter.
  * If no directory is specified, changes to the user's home directory.
  ********************************************************************************/
-void changeUserDir(char** args) {
+void changeUserDir(char** args, char* cwd) {
+	/* get current directory before anything else */
+	//printf("Prev dir: %s\n", getcwd(cwd, 256));
+
 	/* First check to see if we need to go home */
 	if(args[1] == NULL || (strcmp(args[1], "~")) == 0) {
 		printf("We're going home... \n");
-		const char* home = getenv("HOME"); /* get user's home env */
-		chdir(home); /* change to home directory */
+		chdir(getenv("HOME")); /* change to home directory */
+		//printf("%s\n", getcwd(cwd, 256));
 	}
 	else {
 		printf("Switching to specified directory \n");
-		if((chdir(args[1]) == -1)) {
-			printf("Specified directory not found... \n");
-			fflush(stdout);
+		if(chdir(args[1]) == -1){
+		   printf("Directory not found \n");
 		}
-	
+		//printf("%s\n", getcwd(cwd, 256));
 	}
 }
