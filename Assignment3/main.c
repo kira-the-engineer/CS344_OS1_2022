@@ -12,6 +12,8 @@ char cwd[256]; /* Create and initialize an array to store the current working di
 memset(cwd, '\0', 256);
 int exitFlag = 0;
 int estatus = 0;
+int pid = (int)getpid();
+printf("The PID of smallsh is: %d\n", pid);
 
 
 do{
@@ -22,6 +24,7 @@ do{
 	struct command *ucmd = processUserCmd(userCMD);
 
 
+/* testing code ********
 	if(ucmd != NULL) {
 		printf("Command successfully created \n");
 		printStruct(ucmd);
@@ -31,6 +34,7 @@ do{
 		printf("Command parsing failed \n");
 		fflush(stdout);
 	}
+*/
 
 
  	if(ucmd->cmd != NULL){
@@ -48,8 +52,8 @@ do{
 			printf("Not a builtin... \n");
 		}
 	}
-
-
+	free(ucmd); /* free struct before proceeding to next command */
+	ucmd = NULL;
 }while(exitFlag == 0);
 
 return 0;

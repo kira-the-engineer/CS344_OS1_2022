@@ -6,6 +6,52 @@
 #include "builtins.h"
 
 /********************************************************************************
+ * Function to search the token and replace all instances of $$ with the PID
+ * of the smallsh itself.
+ * Adapted from this great stackoverflow thread: https://stackoverflow.com/
+ * questions/779875/what-function-is-to-replace-a-substring-from-a-string-in-c
+ ********************************************************************************/
+char* replacePID(char* token) {
+	int pid = (int)getpid(); /* gets PID of smallsh */
+	char *pidstr = calloc(pid, sizeof(char));
+	sprintf(pidstr,"%d", pid);
+
+	char* result; /* result string */
+        char *tmp; /* create tmp pointer */
+	char *ins; /* char at next insert point */
+	int rem = strlen("$$"); /* get length of $$ to remove */
+	int pidlen = 0; /* set as 0 for default */
+	int lendiff; /* diff btwn first replace and end of last replace */
+	int repcnt; /* count number of replacements */ 
+
+	if(pidstr != NULL){ /* update variable for len of pidstr if it isn't empty */
+		pidlen = strlen(pidstr);
+	}	
+
+	ins = token; /* start at beginning of token */
+	for(repcnt = 0; tmp = strstr(ins, "$$"); ++repcnt){
+		ins = tmp + rem;
+	}
+
+	tmp = result = malloc(strlen(token) + (pidlen - rem) * repcnt + 1); /* allocate space for replacement */
+	
+	while(repcnt--) {
+		ins = strstr(token, "$$");
+		lendiff = ins - token;
+		tmp = strncpy(tmp, token, lendiff) + lendiff;
+		tmp = strcpy(tmp, pidstr) + pidlen;
+		token += lendiff + rem;
+	}	
+	strcpy(tmp, token);
+
+	/* free at end */
+	free(pidstr);
+	pidstr = NULL;
+
+	return result;
+}
+
+/********************************************************************************
  * Function that trims trailing whitespaces off a string by counting the number
  * of nonspace/non NULL chars and moving the null pointer of the string to 
  * the location of the conted chars + 1. Adapted from here:
@@ -57,7 +103,6 @@ struct command *processUserCmd(char* input) {
 	 currCMD->cmd = calloc(sizeof(token) + 1, sizeof(char)); /* allocate space for command string */
 	 strcpy(currCMD->cmd, token); /* Copy token to cmd string in struct */
 	 trimtrailing(currCMD->cmd); /* trim trailing whitespace off cmd */ 
-	 currCMD->cmd = realloc(currCMD->cmd, sizeof(currCMD->cmd) * sizeof(char)); /* reallocate memory */
 
          while(token != NULL){ 
 		if((strcmp(token, "<")) == 0) { /* if char for input file is found */
@@ -69,19 +114,18 @@ struct command *processUserCmd(char* input) {
 		    strcpy(currCMD->outputFile, token);
 		}
 		else { /* add to array of args strings */
-			if(aidx < 512) {
-			    char* temp = calloc(sizeof(token) + 1, sizeof(char)); /* create temp str pointer */
-			    strcpy(temp, token); /* copy token to temp ptr */
-			    currCMD->args[aidx] = temp; /* point string pointer at aidx to temp variable */
-			    aidx++;
-			}	
+		   if(aidx < 512){
+		       char *replaced = replacePID(token); /* replace $$ in token */
+		       currCMD->args[aidx] = replaced;
+		       aidx++;
+		   }
 		}
 		
 		token = strtok_r(NULL, " ", &saveptr); /* move to next token in input string */
 	
 	 } //EO while
 
-	/* lastly check if command is run in the background */
+	/* lastly check if command is run in the background*/
 	int fidx=0;
 	/* loop through array while pointer at idx isn't null to get actual number of args */
 	while(currCMD->args[fidx]) {
@@ -152,12 +196,12 @@ void changeUserDir(char** args, char* cwd) {
 
 	/* First check to see if we need to go home */
 	if(args[1] == NULL || (strcmp(args[1], "~")) == 0) {
-		printf("We're going home... \n");
+		//printf("We're going home... \n");
 		chdir(getenv("HOME")); /* change to home directory */
 		//printf("%s\n", getcwd(cwd, 256));
 	}
 	else {
-		printf("Switching to specified directory \n");
+		//printf("Switching to specified directory \n");
 		if(chdir(args[1]) == -1){
 		   printf("Directory not found \n");
 		}

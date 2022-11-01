@@ -41,10 +41,10 @@ struct command *processUserCmd(char *input);
 
 /********************************************************************************
  * Called in the parseUserCmd function, function prototype for a function that
- * replaces the "$$" in an input command string with the PID of the smallsh
+ * replaces the "$$" in stings in the arguments array with the PID of the smallsh
  * process
  ********************************************************************************/
-void replacePID(char* usercmd); 
+char* replacePID(char* token); 
 
 /********************************************************************************
  * Function prototype for function that prints members of command struct for 
@@ -52,4 +52,9 @@ void replacePID(char* usercmd);
  ********************************************************************************/
 void printStruct(struct command *command);
 
+/********************************************************************************
+ * Function that trims the trailing whitespace of the command before it's stored
+ * in the struct
+ ********************************************************************************/
 void trimtrailing(char* cmd);
+
