@@ -5,6 +5,24 @@
 
 #include "builtins.h"
 
+/********************************************************************************
+ * Function that trims trailing whitespaces off a string by counting the number
+ * of nonspace/non NULL chars and moving the null pointer of the string to 
+ * the location of the conted chars + 1. Adapted from here:
+ * https://codeforwin.org/2016/04/c-program-to-trim-trailing-white-space-characters
+ * -in-string.html
+ ********************************************************************************/
+void trimtrailing(char* cmd) {
+	int idx = -1, i = 0;
+	
+	while(cmd[i] != '\0'){
+		if(cmd[i] != ' ' && cmd[i] != '\t' && cmd[i] != '\n'){
+                	idx= i;
+        	}
+        	i++;
+	}
+	cmd[idx + 1] = '\0';
+}
 
 /********************************************************************************
  * Function that takes in a user input command line and processes it into a
@@ -24,7 +42,6 @@ struct command *processUserCmd(char* input) {
 
 	 /* fully initialize struct */
 	 currCMD->background = 0; /* by default run in foreground */
-	 currCMD->cmd = NULL; /* set pointers to NULL */
 	 int i;
 	 for(i = 0; i < 512; i++) {
 		currCMD->args[i] = NULL;
@@ -39,6 +56,8 @@ struct command *processUserCmd(char* input) {
 	 char *token = strtok_r(input, " ", &saveptr); /* the initial token should be the command itself */
 	 currCMD->cmd = calloc(sizeof(token) + 1, sizeof(char)); /* allocate space for command string */
 	 strcpy(currCMD->cmd, token); /* Copy token to cmd string in struct */
+	 trimtrailing(currCMD->cmd); /* trim trailing whitespace off cmd */ 
+	 currCMD->cmd = realloc(currCMD->cmd, sizeof(currCMD->cmd) * sizeof(char)); /* reallocate memory */
 
          while(token != NULL){ 
 		if((strcmp(token, "<")) == 0) { /* if char for input file is found */
@@ -86,7 +105,9 @@ struct command *processUserCmd(char* input) {
 void printStruct(struct command *currcmd) {
     int i;
     if(currcmd->cmd != NULL) {
-        printf("command: %s \n", currcmd->cmd);
+        for(i = 0; i < sizeof(currcmd->cmd); i++){
+		printf("%c\n", currcmd->cmd[i]);
+	}
     }
     printf("args: ");
     for(i = 0; i < 512; i++) {

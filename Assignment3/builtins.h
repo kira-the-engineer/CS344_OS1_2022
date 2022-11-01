@@ -51,3 +51,5 @@ void replacePID(char* usercmd);
  * testing purposes
  ********************************************************************************/
 void printStruct(struct command *command);
+
+void trimtrailing(char* cmd);
