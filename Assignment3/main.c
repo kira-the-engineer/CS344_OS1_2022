@@ -5,6 +5,12 @@
  *************************************************************************************/
 #include "builtins.h"
 
+//Global vars
+/* def max number of processes that can be started by smallsh */
+#define MAX_PROC 1000 
+int numProc = 0; /* Number of processes currently running */
+pid_t procs[MAX_PROC]; /* array of pids of current running processes  */
+
 int main() {
 char userCMD[2048];
 memset(userCMD, '\0', 2048); /* fully initialize user string before writing to it */
@@ -45,7 +51,7 @@ do{
 			exitStatus(estatus);
 		}
 		else if((strcmp(ucmd->cmd, "exit")) == 0){
-			printf("Call exit handler \n");
+			exit_smallsh();
 			exitFlag = 1;
 		}
 		else {
@@ -57,4 +63,25 @@ do{
 }while(exitFlag == 0);
 
 return 0;
+}
+
+
+/************************************************************************
+ * Function for killing off processes started by smallsh. Since it
+ * utilizes global variables, it's fully defined in main, but its
+ * prototype is in the "builtins.h" file. Essentially, as processes
+ * are created, their PIDS are stored in an array. This function loops
+ * through that array and kills each of those processes using SIGTERM
+*************************************************************************/
+void exit_smallsh() {
+	int i;
+	if(numProc == 0){ //if all processes are exited
+		exit(0);
+	}
+	else { //if processes still remain
+		for(i =0; i < numProc; i++){
+			kill(procs[i], SIGTERM);
+		}		
+	}
+
 }

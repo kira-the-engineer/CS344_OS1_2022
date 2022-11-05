@@ -1,4 +1,4 @@
-/* Header for built in functions besides exit (cd and status). 
+/* Header for built in functions and helpers for those functions. 
  * Also includes input grabbing/parsing functions as well as struct for storing parsed data */
 
 #include <sys/types.h>
@@ -58,3 +58,8 @@ void printStruct(struct command *command);
  ********************************************************************************/
 void trimtrailing(char* cmd);
 
+/********************************************************************************
+ * every time a new process is started, it's PID is added to a global array. 
+ *This function loops through that array and kills each process.
+*********************************************************************************/
+void exit_smallsh();
