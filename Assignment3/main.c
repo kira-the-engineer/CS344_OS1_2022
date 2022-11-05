@@ -16,6 +16,9 @@ int exitFlag = 0;
 int estatus = 0;
 
 
+//Function defs (not builtins)
+
+
 int main() {
 memset(userCMD, '\0', 2048); /* fully initialize user string before writing to it */
 memset(cwd, '\0', 256);
@@ -57,8 +60,7 @@ do{
 		}
 		else {
 			// Code below here is based around the Processes/IO module on Canvas and Explore module of Creating Processes
-			//pid_t spawnPID = fork();
-			int spawnPID = -1; //Dummy var for testing case statement logic without actually forking
+			pid_t spawnPID = fork();
 			procs[numProc] = spawnPID; //add new pid to processes array
 			numProc++;
 			
@@ -69,13 +71,26 @@ do{
 					break;
 				case 0: //spawn that child!!
 					printf("spawning child.... \n");
-					//call child spawning function??
 					break;
 				default:
 					printf("Still the parent \n");
-					//if bg, don't wait
-					//else, wait
+					if(ucmd->background == 1) {//if bg, don't wait
+					    waitpid(spawnPID, &estatus, WNOHANG);
+					    printf("The background pid is %d\n", spawnPID);
+					    fflush(stdout);
+					}
+					else{ //wait for processes
+						waitpid(spawnPID, &estatus, 0);
+					}
 					break;	
+			}
+
+			//check for terminated bg processes
+			//Referenced this page: https://www.tutorialspoint.com/unix_system_calls/waitpid.htm
+			while((spawnPID = waitpid(-1, &estatus, WNOHANG)) > 0) {
+				printf("Background PID %d has finished \n", spawnPID);
+				exitStatus(estatus);
+				fflush(stdout);
 			}
 		}
 	}
