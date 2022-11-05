@@ -10,15 +10,16 @@
 #define MAX_PROC 1000 
 int numProc = 0; /* Number of processes currently running */
 pid_t procs[MAX_PROC]; /* array of pids of current running processes  */
-
-int main() {
 char userCMD[2048];
-memset(userCMD, '\0', 2048); /* fully initialize user string before writing to it */
 char cwd[256]; /* Create and initialize an array to store the current working directory */
-memset(cwd, '\0', 256);
 int exitFlag = 0;
 int estatus = 0;
-int pid = (int)getpid();
+
+
+int main() {
+memset(userCMD, '\0', 2048); /* fully initialize user string before writing to it */
+memset(cwd, '\0', 256);
+int pid = (int)getpid(); /* int to store the smallsh pid for testing purposes */
 printf("The PID of smallsh is: %d\n", pid);
 
 
@@ -55,7 +56,27 @@ do{
 			exitFlag = 1;
 		}
 		else {
-			printf("Not a builtin... \n");
+			// Code below here is based around the Processes/IO module on Canvas and Explore module of Creating Processes
+			//pid_t spawnPID = fork();
+			int spawnPID = -1; //Dummy var for testing case statement logic without actually forking
+			procs[numProc] = spawnPID; //add new pid to processes array
+			numProc++;
+			
+			switch(spawnPID) {
+				case -1:
+					perror("fork() failed \n");
+					exit(1);
+					break;
+				case 0: //spawn that child!!
+					printf("spawning child.... \n");
+					//call child spawning function??
+					break;
+				default:
+					printf("Still the parent \n");
+					//if bg, don't wait
+					//else, wait
+					break;	
+			}
 		}
 	}
 	free(ucmd); /* free struct before proceeding to next command */
@@ -74,6 +95,7 @@ return 0;
  * through that array and kills each of those processes using SIGTERM
 *************************************************************************/
 void exit_smallsh() {
+	printf("The number of processes running before exit are %d \n", numProc);
 	int i;
 	if(numProc == 0){ //if all processes are exited
 		exit(0);
