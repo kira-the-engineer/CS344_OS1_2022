@@ -116,6 +116,7 @@ struct command *processUserCmd(char* input) {
 		else { /* add to array of args strings */
 		   if(aidx < 512){
 		       char *replaced = replacePID(token); /* replace $$ in token */
+		       trimtrailing(replaced);
 		       currCMD->args[aidx] = replaced;
 		       aidx++;
 		   }

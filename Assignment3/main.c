@@ -34,7 +34,8 @@ do{
 	struct command *ucmd = processUserCmd(userCMD);
 
 
-/* testing code ********
+/*
+//test prints
 	if(ucmd != NULL) {
 		printf("Command successfully created \n");
 		printStruct(ucmd);
@@ -65,15 +66,18 @@ do{
 			numProc++;
 			
 			switch(spawnPID) {
-				case -1:
+				case -1: //spawn fails
 					perror("fork() failed \n");
 					exit(1);
 					break;
 				case 0: //spawn that child!!
-					printf("spawning child.... \n");
+					//Code below based on info in the Exploration: Executing an New Program module
+					printf("Child's pid is: %d\n", getpid());
+					execvp(ucmd->args[0], ucmd->args);
+					perror("execvp failed");
+					exit(2); 
 					break;
-				default:
-					printf("Still the parent \n");
+				default: //parent functions
 					if(ucmd->background == 1) {//if bg, don't wait
 					    waitpid(spawnPID, &estatus, WNOHANG);
 					    printf("The background pid is %d\n", spawnPID);
@@ -110,13 +114,14 @@ return 0;
  * through that array and kills each of those processes using SIGTERM
 *************************************************************************/
 void exit_smallsh() {
-	printf("The number of processes running before exit are %d \n", numProc);
 	int i;
 	if(numProc == 0){ //if all processes are exited
+		//printf("All processes done before exit \n");
 		exit(0);
 	}
 	else { //if processes still remain
 		for(i =0; i < numProc; i++){
+			//printf("The number of processes before exit are %d \n", numProc);
 			kill(procs[i], SIGTERM);
 		}		
 	}
