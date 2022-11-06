@@ -78,9 +78,9 @@ void trimtrailing(char* cmd) {
  * new command struct
  ********************************************************************************/
 struct command *processUserCmd(char* input) {
-
+trimtrailing(input); /*trim trailing whitespaces off input */
 /* First we need to check if this is a comment or blank line */
-    if(input[0] == '#' || input == NULL) { /* check if first char is the pound symbol or if input string is empty */
+    if(input[0] == '#' || strcmp(input, "") == 0 || input == NULL) { /* check if first char is the pound symbol or if input string is empty */
 	return NULL; /* if this function returns NULL, main will reprompt user for input */
     }
     else {

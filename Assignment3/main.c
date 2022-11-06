@@ -34,11 +34,11 @@ do{
 	struct command *ucmd = processUserCmd(userCMD);
 
 
-/*
+
 //test prints
+/*
 	if(ucmd != NULL) {
 		printf("Command successfully created \n");
-		printStruct(ucmd);
 		fflush(stdout);
 	}
 	else {
@@ -47,8 +47,7 @@ do{
 	}
 */
 
-
- 	if(ucmd->cmd != NULL){
+ 	if(ucmd != NULL && ucmd->cmd != NULL){
 		if((strcmp(ucmd->cmd, "cd")) == 0){
 			changeUserDir(ucmd->args, cwd);
 		}
