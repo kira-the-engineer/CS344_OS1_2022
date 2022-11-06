@@ -133,10 +133,11 @@ struct command *processUserCmd(char* input) {
 		fidx++;
 	}
 
-	printf("last arg: %s \n", currCMD->args[fidx-1]);
+	//printf("last arg: %s \n", currCMD->args[fidx-1]);
 
 	if(currCMD->args[fidx-1][0] == '&'){
 		currCMD->background = 1; 
+		currCMD->args[fidx-1] = NULL; /* null out & char, so cmds don't try to execute it*/
 	}
 	
         return currCMD;
