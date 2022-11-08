@@ -106,18 +106,20 @@ trimtrailing(input); /*trim trailing whitespaces off input */
 
          while(token != NULL){ 
 		if((strcmp(token, "<")) == 0) { /* if char for input file is found */
+		    currCMD->isInput = 1; /* set flag for input */
 		    token = strtok_r(NULL, " ", &saveptr); /* move pointer forward 1 */
 		    strcpy(currCMD->inputFile, token);
 		} 		
 		else if((strcmp(token, ">")) == 0) { /* if char for output file is found */
+		    currCMD->isOutput = 1; /* set flag for output */
 		    token = strtok_r(NULL, " ", &saveptr); /* move pointer fwd 1 */
 		    strcpy(currCMD->outputFile, token);
 		}
 		else { /* add to array of args strings */
 		   if(aidx < 512){
 		       char *replaced = replacePID(token); /* replace $$ in token */
-		       trimtrailing(replaced);
-		       currCMD->args[aidx] = replaced;
+		       trimtrailing(replaced); /* trim trailing whitespace off expanded string */
+		       currCMD->args[aidx] = replaced; /* save string in array of args */
 		       aidx++;
 		   }
 		}

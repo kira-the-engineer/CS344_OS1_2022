@@ -14,16 +14,17 @@ char userCMD[2048];
 char cwd[256]; /* Create and initialize an array to store the current working directory */
 int exitFlag = 0;
 int estatus = 0;
+int bgAllowed = 0; /* Variable to be modified by SIGSTP. If bg is allowed = 0, if it isn't 1 */
 
 
 //Function defs (not builtins)
-
+void redirect(struct command *cmd); /* function for redirection */
 
 int main() {
 memset(userCMD, '\0', 2048); /* fully initialize user string before writing to it */
 memset(cwd, '\0', 256);
-int pid = (int)getpid(); /* int to store the smallsh pid for testing purposes */
-printf("The PID of smallsh is: %d\n", pid);
+//int pid = (int)getpid(); /* int to store the smallsh pid for testing purposes */
+//printf("The PID of smallsh is: %d\n", pid);
 
 
 do{
@@ -70,11 +71,11 @@ do{
 					exit(1);
 					break;
 				case 0: //spawn that child!!
+					redirect(ucmd); //preform redirection
 					//Code below based on info in the Exploration: Executing an New Program module
-					printf("Child's pid is: %d\n", getpid());
 					execvp(ucmd->args[0], ucmd->args);
 					perror("execvp failed");
-					exit(2); 
+					exit(1); 
 					break;
 				default: //parent functions
 					if(ucmd->background == 1) {//if bg, don't wait
@@ -92,8 +93,8 @@ do{
 			//Referenced this page: https://www.tutorialspoint.com/unix_system_calls/waitpid.htm
 			while((spawnPID = waitpid(-1, &estatus, WNOHANG)) > 0) {
 				printf("Background PID %d has finished \n", spawnPID);
-				exitStatus(estatus);
 				fflush(stdout);
+				exitStatus(estatus);
 			}
 		}
 	}
@@ -125,4 +126,57 @@ void exit_smallsh() {
 		}		
 	}
 
+}
+
+/************************************************************************
+ * This function handles output and input redirection. The code is based
+ * around the dup2 example in the Explore Module about Processes and I/O.
+ * Essentially this function checks the flags for redirection in the cmd
+ * struct and then uses dup2 to change the targets of stdin/stdout 
+*************************************************************************/
+void redirect(struct command *cmd) {
+	if(cmd->isInput){
+	//check bg enable flag- if proc is bg set inputFile to /dev/null
+		if(bgAllowed == 0 && cmd->background == 1) {
+			strcpy(cmd->inputFile, "/dev/null");
+		}
+		int source = open(cmd->inputFile, O_RDONLY); //open input for read
+		if(source < 0) { //error check
+			fprintf(stderr, "Cannot open %s for input \n", cmd->inputFile);
+			fflush(stdout);
+			exit(1);
+		}
+
+		//use dup2 to redir stdin
+		if(dup2(source, 0) < 0) { //error check and call dup2
+			fprintf(stderr, "dup2 failed \n");
+			exit(2);
+		}	
+
+		fcntl(source, F_SETFD, FD_CLOEXEC); //close on exec			
+	}
+	else if(cmd->isOutput){
+	//check bg enable flag - if proc is bg set outputFile to /dev/null
+		int target;
+		if(bgAllowed == 0 && cmd->background == 1) {
+			strcpy(cmd->outputFile, "/dev/null");
+			target = open(cmd->outputFile, O_WRONLY); //open /dev/null for write
+		}
+		else { //open specified output file for write
+			target = open(cmd->outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		}
+
+		if(target < 0) { //error check
+			fprintf(stderr, "Cannot open %s for output \n", cmd->outputFile);
+			fflush(stdout);
+			exit(1);
+		}
+
+		if(dup2(target, 1) < 0) { //call dup2, check for error
+			fprintf(stderr, "dup2 failed \n");
+			exit(2);
+		}
+
+		fcntl(target, F_SETFD, FD_CLOEXEC); //close on exec
+	}
 }
