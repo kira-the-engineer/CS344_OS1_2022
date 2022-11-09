@@ -164,6 +164,8 @@ void printStruct(struct command *currcmd) {
 	}
     }
     printf("\n");
+    printf("input status: %d \n", currcmd->isInput);
+    printf("output status: %d \n", currcmd->isOutput);
     printf("background: %d \n", currcmd->background);
     printf("input file: %s \n", currcmd->inputFile);
     printf("output file: %s \n", currcmd->outputFile);

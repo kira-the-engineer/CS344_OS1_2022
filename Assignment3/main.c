@@ -15,29 +15,34 @@ char cwd[256]; /* Create and initialize an array to store the current working di
 int exitFlag = 0;
 int estatus = 0;
 int bgAllowed = 1; /* Variable to be modified by SIGSTP. If bg is allowed = 0, if it isn't 1 */
+pid_t fgpid;
 
 
 //Function defs (not builtins)
 void redirect(struct command *cmd); /* function for redirection */
 void catchSIGSTP(int sig); /* function to handle ctrl-z */
-void catchSIGINT(int sig); /* function to hand
+void catchSIGINT(int sig); /* function to handle ctrl-c */
 
 int main() {
 memset(cwd, '\0', 256);
 memset(userCMD, '\0', 2048);
 //int pid = (int)getpid(); /* int to store the smallsh pid for testing purposes */
 //printf("The PID of smallsh is: %d\n", pid);
-pid_t fgpid;
 
 /* Signal handling */
 //handle sigstp
-struct sigaction sigstpact = { {0} };
+struct sigaction sigstpact = {0};
 sigstpact.sa_handler = catchSIGSTP;
 sigfillset(&sigstpact.sa_mask);
 sigstpact.sa_flags = SA_RESTART;
 sigaction(SIGTSTP, &sigstpact, NULL);
 
-//handle ctrl-c SIGINT
+//handle sigint
+struct sigaction sigintact = {0};
+sigintact.sa_handler = catchSIGINT;
+sigfillset(&sigintact.sa_mask);
+sigintact.sa_flags = SA_RESTART;
+sigaction(SIGINT, &sigintact, NULL);
 
 do{
 	printf(": ");
@@ -85,6 +90,25 @@ do{
 					exit(1);
 					break;
 				case 0: //spawn that child!!
+					//Pass sig handling to child
+					
+					//child handling of sigint
+					if(bgAllowed && ucmd->background) { //ignore ctrl+c if bg
+						struct sigaction sigintHandle = {0};
+						sigintHandle.sa_handler = SIG_IGN;
+						sigaction(SIGINT, &sigintHandle, NULL);
+					}
+					else {
+						struct sigaction sigintHandle = {0};
+						sigintHandle.sa_handler = SIG_DFL; //allow ctrl+c to kill fg
+						sigaction(SIGINT, &sigintHandle, NULL);
+					}
+
+					//Children ignore sigstp
+					struct sigaction ignoreSIGSTP = {0};
+					ignoreSIGSTP.sa_handler = SIG_IGN;
+					sigaction(SIGTSTP, &ignoreSIGSTP, NULL);
+
 					redirect(ucmd); //preform redirection
 					//Code below based on info in the Exploration: Executing an New Program module
 					execvp(ucmd->cmd, ucmd->args);
@@ -162,12 +186,12 @@ void redirect(struct command *cmd) {
 		//use dup2 to redir stdin
 		if(dup2(source, 0) < 0) { //error check and call dup2
 			fprintf(stderr, "dup2 failed \n");
-			exit(2);
+			exit(1);
 		}	
 
 		fcntl(source, F_SETFD, FD_CLOEXEC); //close on exec			
 	}
-	else if(cmd->isOutput && strcmp(cmd->outputFile, "")){
+	if(cmd->isOutput && strcmp(cmd->outputFile, "")){
 	//check bg enable flag - if proc is bg set outputFile to /dev/null
 		int target;
 		if(bgAllowed && cmd->background) {
@@ -186,7 +210,7 @@ void redirect(struct command *cmd) {
 
 		if(dup2(target, 1) < 0) { //call dup2, check for error
 			fprintf(stderr, "dup2 failed \n");
-			exit(2);
+			exit(1);
 		}
 
 		fcntl(target, F_SETFD, FD_CLOEXEC); //close on exec
@@ -212,16 +236,20 @@ void catchSIGSTP(int sig) {
 		fflush(stdout);
 		bgAllowed = 1;
 	}
-
+	fflush(stdout);
 }
 
 /************************************************************************
- * This function catches and handles SIGINT. It will terminate fg procs
- * if they are running
+ * This function catches and handles SIGINT. It will terminate fg child
+ * procs if they are running
  * Resources used:
  * Canvas module on Signal handling API
 *************************************************************************/
 void catchSIGINT(int sig) {
-
-
+	int fgstatus;
+	if(fgpid != 0) { //if theres a fg process running
+		waitpid(fgpid, &fgstatus, 0);
+		printf("terminated by signal %d\n", sig);
+		fflush(stdout);		
+	}
 }
