@@ -14,7 +14,7 @@ char userCMD[2048];
 char cwd[256]; /* Create and initialize an array to store the current working directory */
 int exitFlag = 0;
 int estatus = 0;
-int bgAllowed = 0; /* Variable to be modified by SIGSTP. If bg is allowed = 0, if it isn't 1 */
+int bgAllowed = 1; /* Variable to be modified by SIGSTP. If bg is allowed = 0, if it isn't 1 */
 
 
 //Function defs (not builtins)
@@ -73,12 +73,12 @@ do{
 				case 0: //spawn that child!!
 					redirect(ucmd); //preform redirection
 					//Code below based on info in the Exploration: Executing an New Program module
-					execvp(ucmd->args[0], ucmd->args);
+					execvp(ucmd->cmd, ucmd->args);
 					perror("execvp failed");
 					exit(1); 
 					break;
 				default: //parent functions
-					if(ucmd->background == 1) {//if bg, don't wait
+					if(bgAllowed && ucmd->background) {//if bg, don't wait
 					    waitpid(spawnPID, &estatus, WNOHANG);
 					    printf("The background pid is %d\n", spawnPID);
 					    fflush(stdout);
@@ -135,9 +135,9 @@ void exit_smallsh() {
  * struct and then uses dup2 to change the targets of stdin/stdout 
 *************************************************************************/
 void redirect(struct command *cmd) {
-	if(cmd->isInput){
+	if(cmd->isInput && strcmp(cmd->inputFile, "")){
 	//check bg enable flag- if proc is bg set inputFile to /dev/null
-		if(bgAllowed == 0 && cmd->background == 1) {
+		if(bgAllowed && cmd->background) {
 			strcpy(cmd->inputFile, "/dev/null");
 		}
 		int source = open(cmd->inputFile, O_RDONLY); //open input for read
@@ -155,10 +155,10 @@ void redirect(struct command *cmd) {
 
 		fcntl(source, F_SETFD, FD_CLOEXEC); //close on exec			
 	}
-	else if(cmd->isOutput){
+	else if(cmd->isOutput && strcmp(cmd->outputFile, "")){
 	//check bg enable flag - if proc is bg set outputFile to /dev/null
 		int target;
-		if(bgAllowed == 0 && cmd->background == 1) {
+		if(bgAllowed && cmd->background) {
 			strcpy(cmd->outputFile, "/dev/null");
 			target = open(cmd->outputFile, O_WRONLY); //open /dev/null for write
 		}
