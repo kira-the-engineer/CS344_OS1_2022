@@ -21,8 +21,8 @@ int bgAllowed = 1; /* Variable to be modified by SIGSTP. If bg is allowed = 0, i
 void redirect(struct command *cmd); /* function for redirection */
 
 int main() {
-memset(userCMD, '\0', 2048); /* fully initialize user string before writing to it */
 memset(cwd, '\0', 256);
+memset(userCMD, '\0', 2048);
 //int pid = (int)getpid(); /* int to store the smallsh pid for testing purposes */
 //printf("The PID of smallsh is: %d\n", pid);
 
@@ -40,6 +40,7 @@ do{
 /*
 	if(ucmd != NULL) {
 		printf("Command successfully created \n");
+		printStruct(ucmd);
 		fflush(stdout);
 	}
 	else {
@@ -98,8 +99,6 @@ do{
 			}
 		}
 	}
-	free(ucmd); /* free struct before proceeding to next command */
-	ucmd = NULL;
 }while(exitFlag == 0);
 
 return 0;

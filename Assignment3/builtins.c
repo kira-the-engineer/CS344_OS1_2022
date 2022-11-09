@@ -88,6 +88,8 @@ trimtrailing(input); /*trim trailing whitespaces off input */
 
 	 /* fully initialize struct */
 	 currCMD->background = 0; /* by default run in foreground */
+	 currCMD->isOutput = 0;
+	 currCMD->isInput = 0;
 	 int i;
 	 for(i = 0; i < 512; i++) {
 		currCMD->args[i] = NULL;
@@ -153,9 +155,7 @@ trimtrailing(input); /*trim trailing whitespaces off input */
 void printStruct(struct command *currcmd) {
     int i;
     if(currcmd->cmd != NULL) {
-        for(i = 0; i < sizeof(currcmd->cmd); i++){
-		printf("%c\n", currcmd->cmd[i]);
-	}
+        printf("cmd: %s\n", currcmd->cmd);
     }
     printf("args: ");
     for(i = 0; i < 512; i++) {
