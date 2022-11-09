@@ -19,13 +19,25 @@ int bgAllowed = 1; /* Variable to be modified by SIGSTP. If bg is allowed = 0, i
 
 //Function defs (not builtins)
 void redirect(struct command *cmd); /* function for redirection */
+void catchSIGSTP(int sig); /* function to handle ctrl-z */
+void catchSIGINT(int sig); /* function to hand
 
 int main() {
 memset(cwd, '\0', 256);
 memset(userCMD, '\0', 2048);
 //int pid = (int)getpid(); /* int to store the smallsh pid for testing purposes */
 //printf("The PID of smallsh is: %d\n", pid);
+pid_t fgpid;
 
+/* Signal handling */
+//handle sigstp
+struct sigaction sigstpact = { {0} };
+sigstpact.sa_handler = catchSIGSTP;
+sigfillset(&sigstpact.sa_mask);
+sigstpact.sa_flags = SA_RESTART;
+sigaction(SIGTSTP, &sigstpact, NULL);
+
+//handle ctrl-c SIGINT
 
 do{
 	printf(": ");
@@ -63,6 +75,7 @@ do{
 		else {
 			// Code below here is based around the Processes/IO module on Canvas and Explore module of Creating Processes
 			pid_t spawnPID = fork();
+			fgpid = spawnPID;
 			procs[numProc] = spawnPID; //add new pid to processes array
 			numProc++;
 			
@@ -178,4 +191,37 @@ void redirect(struct command *cmd) {
 
 		fcntl(target, F_SETFD, FD_CLOEXEC); //close on exec
 	}
+}
+
+
+/************************************************************************
+ * This function catches and handles SIGSTP. Instead of suspending
+ * the program, this function toggles foreground only mode by
+ * setting the bgAllow flag
+ * Resources used:
+ * Canvas module on Signal handling API
+*************************************************************************/	
+void catchSIGSTP(int sig) {
+	if(bgAllowed) {
+		write(STDOUT_FILENO, "\nEntering foreground - only mode (&is now ignored)\n", 50);
+		fflush(stdout);
+		bgAllowed = 0;
+	}
+	else {
+		write(STDOUT_FILENO, "\nExiting foreground-only mode\n", 30);
+		fflush(stdout);
+		bgAllowed = 1;
+	}
+
+}
+
+/************************************************************************
+ * This function catches and handles SIGINT. It will terminate fg procs
+ * if they are running
+ * Resources used:
+ * Canvas module on Signal handling API
+*************************************************************************/
+void catchSIGINT(int sig) {
+
+
 }
