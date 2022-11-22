@@ -1,0 +1,67 @@
+PROGRAM START
+CONSUMER THREAD CREATED
+PRODUCER: myMutex locked
+PRODUCER: waiting on myCond2
+CONSUMER: myMutex locked
+CONSUMER: myMutex unlocked
+CONSUMER: signaling on myCond2
+mycount: 0 -> 1
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+CONSUMER: myMutex locked
+CONSUMER: waiting on myCond1
+PRODUCER: myMutex locked
+mycount: 1 -> 2
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+PRODUCER: myMutex locked
+PRODUCER: waiting on myCond2
+CONSUMER: myMutex unlocked
+CONSUMER: signaling on myCond2
+mycount: 2 -> 3
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+CONSUMER: myMutex locked
+CONSUMER: waiting on myCond1
+PRODUCER: myMutex locked
+mycount: 3 -> 4
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+PRODUCER: myMutex locked
+PRODUCER: waiting on myCond2
+CONSUMER: myMutex unlocked
+CONSUMER: signaling on myCond2
+mycount: 4 -> 5
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+CONSUMER: myMutex locked
+CONSUMER: waiting on myCond1
+PRODUCER: myMutex locked
+mycount: 5 -> 6
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+PRODUCER: myMutex locked
+PRODUCER: waiting on myCond2
+CONSUMER: myMutex unlocked
+CONSUMER: signaling on myCond2
+mycount: 6 -> 7
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+CONSUMER: myMutex locked
+CONSUMER: waiting on myCond1
+PRODUCER: myMutex locked
+mycount: 7 -> 8
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+PRODUCER: myMutex locked
+PRODUCER: waiting on myCond2
+CONSUMER: myMutex unlocked
+CONSUMER: signaling on myCond2
+mycount: 8 -> 9
+PRODUCER: myMutex unlocked
+PRODUCER: signaling on myCond1
+CONSUMER: myMutex locked
+CONSUMER: waiting on myCond1
+PRODUCER: myMutex locked
+mycount: 9 -> 10
+PROGRAM END
