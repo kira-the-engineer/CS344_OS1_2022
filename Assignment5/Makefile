@@ -1,5 +1,6 @@
-all: keygen.o
+all: keygen.o enc_server.o
 	cc -o keygen keygen.o 
+	cc -o enc_server enc_server.o
 
 keygen: keygen.c
 	cc -c keygen.c                    
