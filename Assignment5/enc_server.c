@@ -1,42 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
-//define globals
-#define MAX_CONNS 5
-
-//error function from example server on replit
-void error(const char *msg) {
-	perror(msg);
-	exit(1);
-}
-
-
-// func for setting up addr struct from example server on 344 replit
-void setupAddressStruct(struct sockaddr_in* address, 
-                        int portNumber){
- 
-  // Clear out the address struct
-  memset((char*) address, '\0', sizeof(*address)); 
-
-  // The address should be network capable
-  address->sin_family = AF_INET;
-  // Store the port number
-  address->sin_port = htons(portNumber);
-  // Allow a client at any address to connect to this server
-  address->sin_addr.s_addr = INADDR_ANY;
-}
-
+#include "funcs.h" //include all necessary libs as well as helper functions
 
 int main(int argc, char *argv[]){
+	//The below code makes liberal use of Beej's example stream socket
+	//https://beej.us/guide/bgnet/html/#a-simple-stream-server
 	int connectSock, listenSock, chars_rd = 0; /* listen on listenSock, new conn on connectSock */
-	int reuse_yes = 1; //from Beej's socket programming tutorials - simple stream server example
 	struct sockaddr_in serv_addr, cli_addr;
 	socklen_t size_of_cli_info;
+	pid_t pid; //pid for child process
 
 	// Check usage & args
         if (argc < 2) { 
@@ -61,6 +31,31 @@ int main(int argc, char *argv[]){
 	listen(listenSock, MAX_CONNS); //allow up to 5 concurrent conns
 
 
-	//where the magic happens, actually accept connections, block if not available
-	 
+	//where the magic happens, actually accept connections
+	while(1){ //let's spin!
+		//accept connection request and create a socket
+		size_of_cli_info = sizeof(cli_addr); //get size for creating socket
+	
+		//accept conn and error check
+		if((connectSock = accept(listenSock, (struct sockaddr*)&cli_addr, &size_of_cli_info)) < 0){
+			close(listenSock); //shut off listener
+			error("SERVER: ERROR on accept \n");
+			continue; //from Beej's socket tutorial - simple stream server
+		}
+
+		//Below code follows Beej's Stream Server example, uses a child process to handle encoding data
+		pid = fork(); //fork that process!
+		if(pid == -1){ //if fork was unsuccessful
+			close(listenSock); //stop listening for incoming conns
+			error("SERVER: ERROR could not fork process");
+			continue;
+		}
+		else{ //if we actually spawned a child properly
+			//create strings for 
+			char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
+			char encryptmsg[MAX_BUFFER]; //create string to store encrypted message
+			char plaintxt[MAX_BUFFER]; //store plaintext
+			char keytxt[MAX_BUFFER]; //store key
+		}
+	} 
 }
