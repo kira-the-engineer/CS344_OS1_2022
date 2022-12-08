@@ -85,7 +85,7 @@ int main(int argc, const char *argv[]){
 			
 			     		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
 			     		chars_rd = 0; //reset chars read count
-
+\
 			     		while(chars_rd == 0) { //read file size
 				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
 				    		if(chars_rd < 0){
@@ -97,6 +97,14 @@ int main(int argc, const char *argv[]){
 
 			     		chars_rd = 0; //reset chars cnt
 			     		memset(recvbuf, 0, MAX_BUFFER); //clr buffer
+
+
+					//Once file length has been sent, signal to client to start sending file data
+					chars_rd = send(connectSock, "start", 5, 0);
+
+					//clear!
+					chars_rd = 0;
+					memset(recvbuf, 0, MAX_BUFFER);
 
 			     		//start by recieving plaintext
 			     		while(chars_rd < flen){

@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]) {
   	}
 
 	// Set up the address struct at localhost
-        setupAddressStruct(&servAddr, atoi(argv[3]), LOCALHOST);
+        setupAddressStruct(&servAddr, atoi(argv[3]), "localhost");
 
 	setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)); //reuse sockets
 
@@ -64,47 +64,56 @@ int main(int argc, const char* argv[]) {
 	memset(buffer, '\0', sizeof(buffer)); //clr buffer again
 	chars_wr = 0; //set written char counter back to 0
 
-	//store plaintext length in buffer (since key and plaintext should be same len)
-	sprintf(buffer, "%d", pt_len); //use sprintf to copy len to buffer, since strcpy won't work on a cleared string
+	//wait for signal from server
+	chars_rd = 0;
+	while(chars_rd == 0){
+		chars_rd = recv(socketFD, buffer, sizeof(buffer) - 1, 0);
+	}
+
+	if(strcmp(buffer, "start") == 0){
+		//store plaintext length in buffer (since key and plaintext should be same len)
+		sprintf(buffer, "%d", pt_len); //use sprintf to copy len to buffer, since strcpy won't work on a cleared string
 	
-	//send length to server
-	chars_wr = send(socketFD, buffer, sizeof(buffer) - 1, 0);
-	if(chars_wr < 0){
-		error("CLIENT: ERROR cannot write to server \n");
-	}
-
-	memset(buffer, '\0', sizeof(buffer)); //clear again
-	chars_wr = 0;
-	chars_rd = 0;
-
-	//Once file length is sent, send plaintext to server
-	int fd = open(argv[1], 'r');
-	if(fd == -1){
-		error("CLIENT: ERROR cannot open plaintext for read\n");
-	}
-
-	while(chars_wr <= pt_len){ //keep in a loop to get all chars sent
-		chars_rd = read(fd, buffer, strlen(buffer) -1);
-		chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data to serv
+		//send length to server
+		chars_wr = send(socketFD, buffer, sizeof(buffer) - 1, 0);
 		if(chars_wr < 0){
 			error("CLIENT: ERROR cannot write to server \n");
 		}
-	}
 
-	memset(buffer, '\0', sizeof(buffer)); //you know the drill, clear the buffer and counters
-	chars_wr = 0;
-	chars_rd = 0;
+		memset(buffer, '\0', sizeof(buffer)); //clear again
+		chars_wr = 0;
+		chars_rd = 0;
 
-	fd = open(argv[2], 'r'); //open key for reading this time
-	if(fd == -1){
-		error("CLIENT: ERROR cannot open key for read\n");
-	}
-	while(chars_wr <= kt_len){
-		chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
-		chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data
-		if(chars_wr < 0){
-			error("CLIENT: ERROR cannot write to server \n");
+		//Once file length is sent, send plaintext to server
+		int fd = open(argv[1], 'r');
+		if(fd == -1){
+			error("CLIENT: ERROR cannot open plaintext for read\n");
 		}
+
+		while(chars_wr <= pt_len){ //keep in a loop to get all chars sent
+			chars_rd = read(fd, buffer, strlen(buffer) -1);
+			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data to serv
+			if(chars_wr < 0){
+				error("CLIENT: ERROR cannot write to server \n");
+			}
+		}
+
+		memset(buffer, '\0', sizeof(buffer)); //you know the drill, clear the buffer and counters
+		chars_wr = 0;
+		chars_rd = 0;
+
+		fd = open(argv[2], 'r'); //open key for reading this time
+		if(fd == -1){
+			error("CLIENT: ERROR cannot open key for read\n");
+		}
+		while(chars_wr <= kt_len){
+			chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
+			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data
+			if(chars_wr < 0){
+				error("CLIENT: ERROR cannot write to server \n");
+			}
+		}
+
 	}
 
 	//clear!
