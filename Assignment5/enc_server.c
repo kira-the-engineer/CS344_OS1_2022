@@ -89,7 +89,7 @@ int main(int argc, const char *argv[]){
 			     		//read filesize
 					chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0);
 					if(chars_rd < 0){error("SERVER: ERROR cannot read from client \n");}
-			     		int flen = atoi(recvbuf); //get file length as an int
+			     		long flen = atoi(recvbuf); //get file length as an int
 
 			     		chars_rd = 0; //reset chars cnt
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clr buffer
@@ -109,48 +109,30 @@ int main(int argc, const char *argv[]){
 					memset(recvbuf, '\0', sizeof(recvbuf));
 
 			     		//start by recieving plaintext
-					int byteread = 0;
-					while(chars_rd < flen){
-						memset(recvbuf, '\0', MAX_BUFFER); //clear buffer
-				 		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client
-						chars_rd += byteread; //add to total
-						byteread = 0; //reset for next chunk of data
-				 		strcat(keytxt, recvbuf);
-						memset(recvbuf, '\0', MAX_BUFFER);
+					if(readall(connectSock, recvbuf, MAX_BUFFER) == -1){
+						error("SERVER: ERROR cannot read from client\n");
 					}
 
-			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
-			     		chars_rd = 0; //reset char cnt
+					strcat(plaintxt, recvbuf);
+					strcat(plaintxt, "\n");
 
-/*
-			     		while(chars_rd < flen){
-						memset(recvbuf, '\0', MAX_BUFFER); //clear buffer
-				 		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client
-						chars_rd += byteread; //add to total
-						byteread = 0; //reset for next chunk of data
-				 		strcat(keytxt, recvbuf);
-						memset(recvbuf, '\0', MAX_BUFFER);
-			     		} //eo key loop
-					printf("Rxd all keytext \n");
+			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
+			     		if(readall(connectSock, recvbuf, MAX_BUFFER) == -1){
+						error("SERVER: ERROR cannot read from client\n");
+					}
+					strcat(keytxt, recvbuf);
+					strcat(keytxt, "\n");	     			
 
 			    		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
-					chars_rd = 0;
-					byteread = 0;
 
 			    		//call encryption func
 					encrypt(encryptmsg, plaintxt, keytxt);
-					int encryptlen = strlen(encryptmsg); //get length of fully encrypted string
+					long encryptlen = strlen(encryptmsg); //get length of fully encrypted string
 			   
 			    		//send ecrypted text back to client
-					chars_rd = 0; //clear chars rd
-					memset(recvbuf, '\0', sizeof(recvbuf));
-					while(chars_rd < encryptlen){
-						memset(recvbuf, '\0', MAX_BUFFER);
-						chars_rd += send(connectSock, encryptmsg, sizeof(encryptmsg), 0);
-						memset(recvbuf, '\0', MAX_BUFFER);
-					}
-					memset(recvbuf, '\0', sizeof(recvbuf));
-*/
+					if ((sendall(connectSock, encryptmsg, &encryptlen)) == -1) {
+						error("SERVER: ERROR Cannot write to client\n");
+                			}
 		 	    		exit(0);
 				} //eo inner else
 			} //eo case 0

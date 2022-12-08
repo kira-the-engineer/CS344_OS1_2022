@@ -106,27 +106,27 @@ int main(int argc, const char* argv[]) {
 			error("CLIENT: ERROR cannot write to server\n");
 		}
 	
-		//reset counters
-		chars_wr = 0;
-		chars_rd = 0;
+		//clear
+		memset(buffer, '\0', strlen(buffer));
+		strcat(buffer, keytext);
+		strcat(buffer, "\n");
+		//send key to server
+		if(sendall(socketFD, buffer, &pt_len) == -1){
+			error("CLIENT: ERROR cannot write to server\n");
+		}
 	}
 
-	/*
 	//clear!
 	memset(buffer, '\0', sizeof(buffer));
 	chars_wr = 0;
 	chars_rd = 0;
 
 	//Last thing the client needs to do, get ciphertext from server
-	while(chars_rd < pt_len){ //get encrypted message from server in loop
-		chars_rd += recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
-		strcat(ciphertext, buffer);
-		memset(buffer, '\0', MAX_BUFFER); //clear buffer
+	if(readall(socketFD, ciphertext, pt_len) == -1){
+		error("CLIENT: ERROR cannot read from server \n");
 	}
-	strcat(ciphertext, "\n"); //add newline char at end of ciphertext for printing
 
 	printf("%s", ciphertext);
-	*/
 
 	close(socketFD);
 

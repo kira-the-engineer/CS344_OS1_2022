@@ -50,6 +50,24 @@ int sendall(int s, char *buf, long *len)
     *len = total; // return number actually sent here
 
     return n==-1?-1:0; // return -1 on failure, 0 on success
+}
+
+//modify sendall to work with reading
+int readall(int s, char* buf, long len)
+{
+    int total = 0;        // how many bytes we've received
+    int n = 0;
+    char tmp_buf[MAX_BUFFER];
+    //Read until same number of bytes read as sent. Result is the full cypher message returned in buf
+    while (total < len) {
+        // Read data from the socket, leaving \0 at end
+        n = recv(s, tmp_buf, MAX_BUFFER - 1, 0);
+        if (n == -1) {break; }
+        strcat(buf, tmp_buf);
+        memset(tmp_buf, 0, MAX_BUFFER);
+        total += n;
+    }
+    return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
 } 
 
 // func for setting up addr struct from example server/cli on 344 replit
