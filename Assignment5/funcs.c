@@ -78,3 +78,33 @@ void encrypt(char* result, char* plaintxt, char* key){
 	}
 	result[i] = '\0'; //add null term to end
 }
+
+/**************************************************************************** 
+ * Function that counts number of chars in file and also checks to see if
+ * they are ASCII A-Z or the space character
+ * Partially based on this ex here:
+ * https://www.geeksforgeeks.org/c-program-to-count-the-number-of-characters-in-a-file/
+ ****************************************************************************/
+long validCount(const char* fn){
+	long count = 0;
+	
+	FILE* file = fopen(fn, "r"); //open for read
+
+	if(fn == NULL){ //verify file exists
+		error("CLIENT: ERROR could not open file for read \n");
+		return count;
+	}
+
+	char c = fgetc(file); //gets first char
+
+	while(!(c == EOF || c == '\n')){ //loop to get and check rest of chars in file
+		if(!isupper(c) && (c != ' ')){ //if char is not valid call error and exit
+			error("CLIENT: File has bad characters \n");
+		}
+		c = fgetc(file);
+		count++;
+	}
+
+	fclose(file);
+	return count;
+}

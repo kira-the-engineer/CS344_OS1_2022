@@ -1,6 +1,6 @@
 #include "funcs.h" //include all necessary libs as well as helper functions
 
-int main(int argc, char *argv[]){
+int main(int argc, const char *argv[]){
 	//The below code makes liberal use of Beej's example stream socket
 	//https://beej.us/guide/bgnet/html/#a-simple-stream-server
 	int connectSock, listenSock, status, chars_rd = 0; /* listen on listenSock, new conn on connectSock */
@@ -21,14 +21,12 @@ int main(int argc, char *argv[]){
 	listenSock = socket(AF_INET, SOCK_STREAM, 0);
 	if(listenSock < 0) {
 		error("SERVER: ERROR Opening Socket \n");
-		exit(1);
 	}
 
 	//if sock is successfully created, bind to port and begin to listen
 	if(bind(listenSock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
-		error("SERVER: ERROR on binding \n");
 		close(listenSock);
-		exit(1);
+		error("SERVER: ERROR on binding \n");
 	}
 
 	//where the magic happens, actually accept connections
@@ -42,7 +40,6 @@ int main(int argc, char *argv[]){
 		if(connectSock < 0){
 			close(listenSock); //shut off listener
 			error("SERVER: ERROR on accept \n");
-			continue; //from Beej's socket tutorial - simple stream server
 		} //eo if
 
 		//Below code follows Beej's Stream Server example, uses a child process to handle encoding data
@@ -68,9 +65,8 @@ int main(int argc, char *argv[]){
 				while(chars_rd == 0){
 					chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx handshake msg
 					if(chars_rd < 0) { //make sure we actually read from connected client properly
-						error("SERVER: ERROR cannot read from client \n");
 						close(connectSock);
-						exit(1);
+						error("SERVER: ERROR cannot read from client \n");
 					} //eo if
 				} //eo while
 
@@ -78,20 +74,14 @@ int main(int argc, char *argv[]){
 				if(strcmp(recvbuf, ENC_CONFIRM_MSG) != 0){ //if the wrong client connects by accident
 					printf("SERVER: Client handshake message does not match \n");
 					chars_rd = send(connectSock, BAD_SERV, 7, 0); //send rejection message to client
-					if(chars_rd < 0) {
-						error("SERVER: ERROR cannot write to client \n");
-						close(connectSock);
-						exit(2);
-					} //eo inner if
 					exit(2);
 				} //eo outer if
 				else { //right client connected
 			      		printf("SERVER: Connected to correct client \n");
 			      		chars_rd = send(connectSock, CORRECT_SERV, 7, 0); //send accept message to client
 			      		if(chars_rd < 0) {
-						error("SERVER: ERROR cannot write to client \n");
 						close(connectSock);
-						exit(2);
+						error("SERVER: ERROR cannot write to client \n");
 			      		} //eo if
 			
 			     		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
@@ -100,7 +90,8 @@ int main(int argc, char *argv[]){
 			     		while(chars_rd == 0) { //read file size
 				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
 				    		if(chars_rd < 0){
-					 	error("SERVER: ERROR cannot read from client \n");
+							close(connectSock);
+					 		error("SERVER: ERROR cannot read from client \n");
 				    		} //eo if
 			     		} //eo while
 			     		int flen = atoi(recvbuf); //get file length as an int
@@ -112,6 +103,7 @@ int main(int argc, char *argv[]){
 			     		while(chars_rd < flen){
 			         		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client 
 				 		if(chars_rd < 0) {
+							close(connectSock);
 							error("SERVER: ERROR cannot read from client \n");
 				 		} //eo if
 				 		else {
@@ -125,6 +117,7 @@ int main(int argc, char *argv[]){
 			     		while(chars_rd < flen){
 				 		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client 
 				 		if(chars_rd < 0) {
+							close(connectSock);
 							error("SERVER: ERROR cannot read from client \n");
 				 		} //eo if
 				 		else {
@@ -142,9 +135,8 @@ int main(int argc, char *argv[]){
 					chars_rd = 0; //clear chars rd
 					chars_rd = send(connectSock, encryptmsg, encryptlen, 0);
 					if(chars_rd < 0) {
-						error("SERVER: ERROR cannot write to client \n");
 						close(connectSock);
-						exit(2);
+						error("SERVER: ERROR cannot write to client \n");
 			      		} //eo if
 		 	    		exit(0);
 				} //eo inner else
