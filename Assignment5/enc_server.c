@@ -26,20 +26,20 @@ int main(int argc, char *argv[]){
 
 	//if sock is successfully created, bind to port and begin to listen
 	if(bind(listenSock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
-		close(listenSock);
 		error("SERVER: ERROR on binding \n");
+		close(listenSock);
 		exit(1);
 	}
-	listen(listenSock, MAX_CONNS); //allow up to 5 concurrent conns
-
 
 	//where the magic happens, actually accept connections
 	while(1){ //let's spin!
+		listen(listenSock, MAX_CONNS); //allow up to 5 concurrent conns
 		//accept connection request and create a socket
 		size_of_cli_info = sizeof(cli_addr); //get size for creating socket
 	
 		//accept conn and error check
-		if((connectSock = accept(listenSock, (struct sockaddr*)&cli_addr, &size_of_cli_info)) < 0){
+		connectSock = accept(listenSock, (struct sockaddr*)&cli_addr, &size_of_cli_info);
+		if(connectSock < 0){
 			close(listenSock); //shut off listener
 			error("SERVER: ERROR on accept \n");
 			continue; //from Beej's socket tutorial - simple stream server
@@ -54,6 +54,7 @@ int main(int argc, char *argv[]){
 				continue;
 			} //eo case -1
 			case 0: { //if we actually spawned a child properly
+				printf("Fork successful \n");
 				//create strings for recieved data from client
 				char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
 				char encryptmsg[MAX_BUFFER]; //create string to store encrypted message
@@ -134,8 +135,17 @@ int main(int argc, char *argv[]){
 			    		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
 
 			    		//call encryption func
+					encrypt(encryptmsg, plaintxt, keytxt);
+					int encryptlen = strlen(encryptmsg); //get length of fully encrypted string
 			   
 			    		//send ecrypted text back to client
+					chars_rd = 0; //clear chars rd
+					chars_rd = send(connectSock, encryptmsg, encryptlen, 0);
+					if(chars_rd < 0) {
+						error("SERVER: ERROR cannot write to client \n");
+						close(connectSock);
+						exit(2);
+			      		} //eo if
 		 	    		exit(0);
 				} //eo inner else
 			} //eo case 0

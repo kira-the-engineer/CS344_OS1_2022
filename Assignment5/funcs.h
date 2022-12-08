@@ -22,3 +22,6 @@
 //function prototyes
 void setupAddressStruct(struct sockaddr_in*, int); 
 void error(const char*);
+void encrypt(char* result, char* plaintext, char* keytext);
+int char_2_int(char c);
+char int_2_char(int i);
