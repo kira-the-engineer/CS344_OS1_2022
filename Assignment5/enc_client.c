@@ -95,7 +95,6 @@ int main(int argc, const char* argv[]) {
 
 		//read plaintext file char by char into storage array
 		charbychar(plaintext, argv[1]);
-		printf("Read plaintext file!\n");
 
 		//send file to server		
 

@@ -26,7 +26,7 @@ void charbychar(char* result, const char* filename){
 		exit(1);
 	}
 
-	while((c = fgetc(fp)) != EOF && c != '\n'){
+	for(c = getc(fp); c != EOF && c != '\n'; c = getc(fp)){ //use for loop instead to get through data
 		result[count++];
 	}
 	result[count] = '\0'; //add null term on end
