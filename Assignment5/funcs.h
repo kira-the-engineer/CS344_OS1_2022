@@ -20,7 +20,7 @@
 #define CORRECT_SERV "accept"
 
 //function prototyes
-void setupAddressStruct(struct sockaddr_in*, int); 
+void setupAddressStruct(struct sockaddr_in*, int, char*); 
 void error(const char*);
 void encrypt(char* result, char* plaintext, char* keytext);
 int char_2_int(char c);

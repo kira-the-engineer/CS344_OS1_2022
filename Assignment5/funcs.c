@@ -8,9 +8,10 @@ void error(const char *msg) {
 }
 
 
-// func for setting up addr struct from example server on 344 replit
-void setupAddressStruct(struct sockaddr_in* address, 
-                        int portNumber){
+// func for setting up addr struct from example server/cli on 344 replit
+// modified to check whether we need to create addr struct for serv
+// or client
+void setupAddressStruct(struct sockaddr_in* address, int portNumber, char *hostname){
  
   // Clear out the address struct
   memset((char*) address, '\0', sizeof(*address)); 
@@ -19,8 +20,22 @@ void setupAddressStruct(struct sockaddr_in* address,
   address->sin_family = AF_INET;
   // Store the port number
   address->sin_port = htons(portNumber);
-  // Allow a client at any address to connect to this server
-  address->sin_addr.s_addr = INADDR_ANY;
+
+  if (strcmp(hostname, "INADDR_ANY") == 0) { //client at any address can connect to serv
+        address->sin_addr.s_addr = INADDR_ANY;
+  }
+  else { //if this is for the client side
+	//get the DNS info on localhost for client
+  	struct hostent* hostInfo = gethostbyname(hostname); 
+  	if (hostInfo == NULL) { 
+    		fprintf(stderr, "CLIENT: ERROR, no such host\n"); 
+    		exit(0); 
+  	}
+  	// Copy the first IP address from the DNS entry to sin_addr.s_addr
+ 	memcpy((char*) &address->sin_addr.s_addr, 
+        	hostInfo->h_addr_list[0],
+        	hostInfo->h_length);
+  	}
 }
 
 /****************************************************************************

@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
         } 
 
 	//setup server address struct, argv[1] is port num
-	setupAddressStruct(&serv_addr, atoi(argv[1]));
+	setupAddressStruct(&serv_addr, atoi(argv[1]), "INADDR_ANY"); //any cli can connect
 
 	//create socket to listen for conns
 	listenSock = socket(AF_INET, SOCK_STREAM, 0);
