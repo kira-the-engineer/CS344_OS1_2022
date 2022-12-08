@@ -51,10 +51,9 @@ int main(int argc, const char *argv[]){
 				continue;
 			} //eo case -1
 			case 0: { //if we actually spawned a child properly
-				printf("Fork successful \n");
 				//create strings for recieved data from client
 				char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
-				char encryptmsg[MAX_BUFFER]; //create string to store encrypted message
+				char encryptmsg[MAX_BUFFER] = {0, }; //create string to store encrypted message
 				char plaintxt[MAX_BUFFER]; //store plaintext
 				char keytxt[MAX_BUFFER]; //store key
 

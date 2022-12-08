@@ -18,6 +18,7 @@
 #define DEC_CONFIRM_MSG "dec_cli" //message sent from dec_client to dec_server
 #define BAD_SERV "reject"
 #define CORRECT_SERV "accept"
+#define LOCALHOST "127.0.0.1"
 
 //function prototyes
 void setupAddressStruct(struct sockaddr_in*, int, char*); 

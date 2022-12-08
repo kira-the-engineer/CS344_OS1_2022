@@ -26,7 +26,7 @@ int main(int argc, char* argv[]){
 	}
 	key[len] = '\0'; //set last char as null term
 
-	printf("key: %s \n", key);
+	printf("%s\n", key);
 	return 0;
 	
 }

@@ -68,14 +68,12 @@ char int_2_char(int i) {
 void encrypt(char* result, char* plaintxt, char* key){
 	int i = 0;
 	int enc;
-	char c;
 
 	while(plaintxt[i] != '\0'){ //loop for len of plaintxt
-		c = plaintxt[i]; //get original char
 		enc = (char_2_int(plaintxt[i]) + char_2_int(key[i])) % 27; //get new int for encoded char
-		result[i] = int_2_char(enc); //place encoded char in result message
-		i++;
+		result[i++] = int_2_char(enc); //place encoded char in result message
 	}
+	result[i++] = '\n'; //add newline
 	result[i] = '\0'; //add null term to end
 }
 
@@ -90,7 +88,7 @@ long validCount(const char* fn){
 	
 	FILE* file = fopen(fn, "r"); //open for read
 
-	if(fn == NULL){ //verify file exists
+	if(file == NULL){ //verify file exists
 		error("CLIENT: ERROR could not open file for read \n");
 		return count;
 	}
@@ -99,6 +97,7 @@ long validCount(const char* fn){
 
 	while(!(c == EOF || c == '\n')){ //loop to get and check rest of chars in file
 		if(!isupper(c) && (c != ' ')){ //if char is not valid call error and exit
+			fclose(file);
 			error("CLIENT: File has bad characters \n");
 		}
 		c = fgetc(file);

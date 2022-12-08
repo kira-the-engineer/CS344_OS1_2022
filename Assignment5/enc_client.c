@@ -21,7 +21,7 @@ int main(int argc, const char* argv[]) {
   	}
 
 	// Set up the address struct at localhost
-        setupAddressStruct(&servAddr, atoi(argv[3]), "localhost");
+        setupAddressStruct(&servAddr, atoi(argv[3]), LOCALHOST);
 
 	setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)); //reuse sockets
 
@@ -79,24 +79,26 @@ int main(int argc, const char* argv[]) {
 
 	//Once file length is sent, send plaintext to server
 	int fd = open(argv[1], 'r');
-	if(fd < 0){
+	if(fd == -1){
 		error("CLIENT: ERROR cannot open plaintext for read\n");
 	}
 
 	while(chars_wr <= pt_len){ //keep in a loop to get all chars sent
-		chars_rd = read(fd, buffer, sizeof(buffer) - 1); //read data into buffer
+		chars_rd = read(fd, buffer, strlen(buffer) -1);
 		chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data to serv
 		if(chars_wr < 0){
 			error("CLIENT: ERROR cannot write to server \n");
 		}
 	}
-	close(fd); //close out plaintext file once sent
 
 	memset(buffer, '\0', sizeof(buffer)); //you know the drill, clear the buffer and counters
 	chars_wr = 0;
 	chars_rd = 0;
 
 	fd = open(argv[2], 'r'); //open key for reading this time
+	if(fd == -1){
+		error("CLIENT: ERROR cannot open key for read\n");
+	}
 	while(chars_wr <= kt_len){
 		chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
 		chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data
