@@ -57,7 +57,8 @@ int main(int argc, const char* argv[]) {
 
 	//check to see if we recieved a rejection/bad client
 	if(strcmp(buffer, BAD_SERV) == 0){
-		error("CLIENT: Bad handshake \n");
+		fprintf(stderr, "CLIENT: Bad handshake \n");
+		exit(2);
 	}
 
 	//if we successfully connected, prepare to write file length to server
@@ -92,6 +93,7 @@ int main(int argc, const char* argv[]) {
 		}
 
 		while(chars_wr <= pt_len){ //keep in a loop to get all chars sent
+			memset(buffer, '\0', sizeof(buffer));
 			chars_rd = read(fd, buffer, strlen(buffer) -1);
 			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data to serv
 			memset(buffer, '\0', 1024); //clear buffer, load in chunks
@@ -105,6 +107,7 @@ int main(int argc, const char* argv[]) {
 			error("CLIENT: ERROR cannot open key for read\n");
 		}
 		while(chars_wr <= kt_len){
+			memset(buffer, '\0', sizeof(buffer));
 			chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
 			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data
 			memset(buffer, '\0', 1024);

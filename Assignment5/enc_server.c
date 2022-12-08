@@ -63,15 +63,16 @@ int main(int argc, const char *argv[]){
 				//read the client's handshake first to ensure we conn to right server
 				while(chars_rd == 0){
 					chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx handshake msg
-					if(chars_rd < 0) { //make sure we actually read from connected client properly
+				} //eo while
+
+				if(chars_rd < 0) { //make sure we actually read from connected client properly
 						close(connectSock);
 						error("SERVER: ERROR cannot read from client \n");
-					} //eo if
-				} //eo while
+				}//eo if
 
 				//verify handshake message against defined message
 				if(strcmp(recvbuf, ENC_CONFIRM_MSG) != 0){ //if the wrong client connects by accident
-					printf("SERVER: Client handshake message does not match \n");
+					fprintf(stderr, "SERVER: Client handshake message does not match \n");
 					chars_rd = send(connectSock, BAD_SERV, 7, 0); //send rejection message to client
 					exit(2);
 				} //eo outer if
@@ -88,13 +89,13 @@ int main(int argc, const char *argv[]){
 
 			     		while(chars_rd == 0) { //read file size
 				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
-				    		if(chars_rd < 0){
-							close(connectSock);
-					 		error("SERVER: ERROR cannot read from client \n");
-				    		} //eo if
-						memset(recvbuf, '\0', 1024); //clear
 			     		} //eo while
+					if(chars_rd < 0){
+						close(connectSock);
+					 	error("SERVER: ERROR cannot read from client \n");
+				    	} //eo if
 			     		int flen = atoi(recvbuf); //get file length as an int
+					printf("Filelen: %d\n", flen);
 
 			     		chars_rd = 0; //reset chars cnt
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clr buffer
@@ -109,6 +110,7 @@ int main(int argc, const char *argv[]){
 
 			     		//start by recieving plaintext
 			     		while(chars_rd < flen){
+						memset(recvbuf, '\0', 1024); //clear buffer
 			         		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
 						strcat(plaintxt, recvbuf);
 						memset(recvbuf, '\0', 1024);
@@ -118,6 +120,7 @@ int main(int argc, const char *argv[]){
 			     		chars_rd = 0; //reset char cnt
 
 			     		while(chars_rd < flen){
+						memset(recvbuf, '\0', 1024); //clear buffer
 				 		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client 
 				 		strcat(keytxt, recvbuf);
 						memset(recvbuf, '\0', 1024);
@@ -133,7 +136,8 @@ int main(int argc, const char *argv[]){
 					chars_rd = 0; //clear chars rd
 					memset(recvbuf, '\0', sizeof(recvbuf));
 					while(chars_rd < encryptlen){
-						chars_rd += send(connectSock, encryptmsg, encryptlen, 0);
+						memset(recvbuf, '\0', 1024);
+						chars_rd += send(connectSock, encryptmsg, sizeof(encryptmsg), 0);
 						memset(recvbuf, '\0', 1024);
 					}
 					memset(recvbuf, '\0', sizeof(recvbuf));
