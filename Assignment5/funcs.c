@@ -78,6 +78,24 @@ void encrypt(char* result, char* plaintxt, char* key){
 }
 
 /**************************************************************************** 
+ * Function for decrypting encrypted message using key
+ ****************************************************************************/
+void decrypt(char* dmsg, char* emsg, char* key) {
+    int dec, i = 0;
+    while (emsg[i] != '\0') {
+        // Convert characters to integers
+        dec = char_2_int(emsg[i]) - char_2_int(key[i]); //get decoded char
+        if (dec < 0) { // Handle negative case
+            dec += 27;
+        }
+        dmsg[i++] = int_2_char(dec);
+    }
+    dmsg[i++] = '\n';
+    dmsg[i] = '\0';
+}
+
+
+/**************************************************************************** 
  * Function that counts number of chars in file and also checks to see if
  * they are ASCII A-Z or the space character
  * Partially based on this ex here:
