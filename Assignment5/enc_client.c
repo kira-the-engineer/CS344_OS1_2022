@@ -5,6 +5,8 @@ int main(int argc, const char* argv[]) {
 	int socketFD, chars_rd, chars_wr;
 	struct sockaddr_in servAddr;
 	char buffer[1024]; //have buffer for proc data
+	char plaintext[MAX_BUFFER];
+	char keytext[MAX_BUFFER];
 	char ciphertext[MAX_BUFFER]; //string to store result cipher from server
 	int reuse = 1; //create reusable socket
 
@@ -90,41 +92,20 @@ int main(int argc, const char* argv[]) {
 	if(strcmp(buffer, "start") == 0){
 		printf("Start transmission... \n");
 		//Once file length is sent, send plaintext to server
-		int fd = open(argv[1], 'r');
-		if(fd == -1){
-			error("CLIENT: ERROR cannot open plaintext for read\n");
-		}
 
-		int charsent = 0;
-		do{ //keep in a loop to get all chars sent
-			memset(buffer, '\0', sizeof(buffer));
-			chars_rd = read(fd, buffer, strlen(buffer) -1);
-			chars_wr = send(socketFD, buffer, strlen(buffer), 0); //send data to serv
-			if(chars_wr < 0) {error("CLIENT: ERROR cannot write to server \n");}
-			charsent += chars_wr;
-			memset(buffer, '\0', 1024); //clear buffer, load in chunks
-		}while(charsent <= pt_len);
+		//read plaintext file char by char into storage array
+		charbychar(plaintext, argv[1]);
+		printf("Read plaintext file!\n");
+
+		//send file to server		
+
 	
 		//reset counters
 		chars_wr = 0;
 		chars_rd = 0;
-		charsent = 0;
-
-		fd = open(argv[2], 'r'); //open key for reading this time
-		if(fd == -1){
-			error("CLIENT: ERROR cannot open key for read\n");
-		}
-		do{ //send key
-			memset(buffer, '\0', sizeof(buffer));
-			chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
-			chars_wr = send(socketFD, buffer, strlen(buffer), 0); //send data
-			if(chars_wr < 0) {error("CLIENT: ERROR cannot write to server \n");}
-			charsent += chars_wr;
-			memset(buffer, '\0', 1024);
-		}while(charsent <= pt_len);
-
 	}
 
+	/*
 	//clear!
 	memset(buffer, '\0', sizeof(buffer));
 	chars_wr = 0;
@@ -139,6 +120,7 @@ int main(int argc, const char* argv[]) {
 	strcat(ciphertext, "\n"); //add newline char at end of ciphertext for printing
 
 	printf("%s", ciphertext);
+	*/
 
 	close(socketFD);
 

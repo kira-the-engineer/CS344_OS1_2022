@@ -8,6 +8,31 @@ void error(const char *msg) {
 }
 
 
+//takes in a result string and file name, opens file for read, reads char by char to result string
+//ref: https://stackoverflow.com/questions/4823177/reading-a-file-character-by-character-in-c
+void charbychar(char* result, const char* filename){
+	char c;
+	int count = 0;
+
+	if(filename == NULL){
+		fprintf(stderr, "Invalid filename \n");
+		exit(1);
+	}
+
+	FILE* fp = fopen(filename, "r"); //open file for read
+
+	if(fp == NULL){
+		fprintf(stderr, "Cannot open file for read\n");
+		exit(1);
+	}
+
+	while((c = fgetc(fp)) != EOF && c != '\n'){
+		result[count++];
+	}
+	result[count] = '\0'; //add null term on end
+}
+
+
 // func for setting up addr struct from example server/cli on 344 replit
 // modified to check whether we need to create addr struct for serv
 // or client

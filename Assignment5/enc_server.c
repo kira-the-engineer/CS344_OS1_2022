@@ -66,7 +66,6 @@ int main(int argc, const char *argv[]){
 				} //eo while
 
 				if(chars_rd < 0) { //make sure we actually read from connected client properly
-						close(connectSock);
 						error("SERVER: ERROR cannot read from client \n");
 				}//eo if
 
@@ -87,20 +86,19 @@ int main(int argc, const char *argv[]){
 			     		memset(recvbuf, '\0' , sizeof(recvbuf)); //clear buffer
 			     		chars_rd = 0; //reset chars read count
 
-			     		while(chars_rd == 0) { //read file size
-				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
-						if(chars_rd < 0){
-							close(connectSock);
-					 		error("SERVER: ERROR cannot read from client \n");
-				    		}
-			     		} //eo while
+			     		//read filesize
+					chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0);
+					if(chars_rd < 0){error("SERVER: ERROR cannot read from client \n");}
 			     		int flen = atoi(recvbuf); //get file length as an int
 					printf("Filelen: %d\n", flen);
 
 			     		chars_rd = 0; //reset chars cnt
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clr buffer
 
-
+					if(flen < 0 || flen == 0){
+						error("SERVER: ERROR did not receive valid file length from client \n");
+					}
+	
 					//Once file length has been sent, signal to client to start sending file data
 					chars_rd = send(connectSock, "start", 5, 0);
 					if(chars_rd < 0){
@@ -113,20 +111,17 @@ int main(int argc, const char *argv[]){
 
 			     		//start by recieving plaintext
 					int byteread = 0;
-			     		while(chars_rd < flen){
-						memset(recvbuf, '\0', 1024); //clear buffer
-			         		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
-						chars_rd += byteread; //add to total chars read
-						byteread = 0; //reset for next chunk of data
-						strcat(plaintxt, recvbuf);
-						memset(recvbuf, '\0', 1024);
-			     		} //eo plaintext loop
+					memset(recvbuf, '\0', 1024); //clear buffer
+			         	byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
+					if(byteread < 0) {error("SERVER: ERROR cannot read from client\n");}
+					printf("rxd %d chars \n", byteread);
 					printf("Rxd all plaintext \n");
 
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
 			     		chars_rd = 0; //reset char cnt
 					byteread = 0; //reset byte counter
 
+/*
 			     		while(chars_rd < flen){
 						memset(recvbuf, '\0', 1024); //clear buffer
 				 		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client
@@ -154,6 +149,7 @@ int main(int argc, const char *argv[]){
 						memset(recvbuf, '\0', 1024);
 					}
 					memset(recvbuf, '\0', sizeof(recvbuf));
+*/
 		 	    		exit(0);
 				} //eo inner else
 			} //eo case 0
