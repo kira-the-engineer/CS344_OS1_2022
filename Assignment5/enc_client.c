@@ -34,6 +34,8 @@ int main(int argc, const char* argv[]) {
 	//first validate input
 	long pt_len = validCount(argv[1]); //get length of plaintext file
 	long kt_len = validCount(argv[2]); //get length of key file
+	printf("length of plaintext: %ld \n", pt_len);
+	printf("length of keytext: %ld \n", kt_len);
 
 	//check to see if plaintext is longer than key
 	if(pt_len > kt_len) {
@@ -65,7 +67,7 @@ int main(int argc, const char* argv[]) {
 	memset(buffer, '\0', sizeof(buffer)); //clr buffer again
 	chars_wr = 0; //set written char counter back to 0
 
-	//store plaintext length in buffer (since key and plaintext should be same len)
+	//store plaintext length in buffer (since key and plaintext should be at least same len)
 		sprintf(buffer, "%d", pt_len); //use sprintf to copy len to buffer, since strcpy won't work on a cleared string
 	
 		//send length to server
@@ -86,32 +88,40 @@ int main(int argc, const char* argv[]) {
 	}
 
 	if(strcmp(buffer, "start") == 0){
+		printf("Start transmission... \n");
 		//Once file length is sent, send plaintext to server
 		int fd = open(argv[1], 'r');
 		if(fd == -1){
 			error("CLIENT: ERROR cannot open plaintext for read\n");
 		}
 
-		while(chars_wr <= pt_len){ //keep in a loop to get all chars sent
+		int charsent = 0;
+		do{ //keep in a loop to get all chars sent
 			memset(buffer, '\0', sizeof(buffer));
 			chars_rd = read(fd, buffer, strlen(buffer) -1);
-			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data to serv
+			chars_wr = send(socketFD, buffer, strlen(buffer), 0); //send data to serv
+			if(chars_wr < 0) {error("CLIENT: ERROR cannot write to server \n");}
+			charsent += chars_wr;
 			memset(buffer, '\0', 1024); //clear buffer, load in chunks
-		}
-		memset(buffer, '\0', sizeof(buffer)); //clear again
+		}while(charsent <= pt_len);
+	
+		//reset counters
 		chars_wr = 0;
 		chars_rd = 0;
+		charsent = 0;
 
 		fd = open(argv[2], 'r'); //open key for reading this time
 		if(fd == -1){
 			error("CLIENT: ERROR cannot open key for read\n");
 		}
-		while(chars_wr <= kt_len){
+		do{ //send key
 			memset(buffer, '\0', sizeof(buffer));
 			chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
-			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data
+			chars_wr = send(socketFD, buffer, strlen(buffer), 0); //send data
+			if(chars_wr < 0) {error("CLIENT: ERROR cannot write to server \n");}
+			charsent += chars_wr;
 			memset(buffer, '\0', 1024);
-		}
+		}while(charsent <= pt_len);
 
 	}
 
@@ -123,9 +133,6 @@ int main(int argc, const char* argv[]) {
 	//Last thing the client needs to do, get ciphertext from server
 	while(chars_rd < pt_len){ //get encrypted message from server in loop
 		chars_rd += recv(socketFD, buffer, sizeof(buffer) - 1, 0); 
-		if(chars_rd < 0){
-			error("CLIENT: ERROR cannot read from server \n");
-		}
 		strcat(ciphertext, buffer);
 		memset(buffer, '\0', 1024); //clear buffer
 	}

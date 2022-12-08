@@ -89,11 +89,11 @@ int main(int argc, const char *argv[]){
 
 			     		while(chars_rd == 0) { //read file size
 				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
+						if(chars_rd < 0){
+							close(connectSock);
+					 		error("SERVER: ERROR cannot read from client \n");
+				    		}
 			     		} //eo while
-					if(chars_rd < 0){
-						close(connectSock);
-					 	error("SERVER: ERROR cannot read from client \n");
-				    	} //eo if
 			     		int flen = atoi(recvbuf); //get file length as an int
 					printf("Filelen: %d\n", flen);
 
@@ -103,30 +103,43 @@ int main(int argc, const char *argv[]){
 
 					//Once file length has been sent, signal to client to start sending file data
 					chars_rd = send(connectSock, "start", 5, 0);
+					if(chars_rd < 0){
+						error("SERVER: ERROR could not send message to client\n");
+					}
 
 					//clear!
 					chars_rd = 0;
 					memset(recvbuf, '\0', sizeof(recvbuf));
 
 			     		//start by recieving plaintext
+					int byteread = 0;
 			     		while(chars_rd < flen){
 						memset(recvbuf, '\0', 1024); //clear buffer
-			         		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
+			         		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
+						chars_rd += byteread; //add to total chars read
+						byteread = 0; //reset for next chunk of data
 						strcat(plaintxt, recvbuf);
 						memset(recvbuf, '\0', 1024);
 			     		} //eo plaintext loop
+					printf("Rxd all plaintext \n");
 
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
 			     		chars_rd = 0; //reset char cnt
+					byteread = 0; //reset byte counter
 
 			     		while(chars_rd < flen){
 						memset(recvbuf, '\0', 1024); //clear buffer
-				 		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client 
+				 		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client
+						chars_rd += byteread; //add to total
+						byteread = 0; //reset for next chunk of data
 				 		strcat(keytxt, recvbuf);
 						memset(recvbuf, '\0', 1024);
 			     		} //eo key loop
+					printf("Rxd all keytext \n");
 
 			    		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
+					chars_rd = 0;
+					byteread = 0;
 
 			    		//call encryption func
 					encrypt(encryptmsg, plaintxt, keytxt);
