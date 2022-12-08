@@ -4,7 +4,7 @@
 int main(int argc, const char* argv[]) {
 	int socketFD, chars_rd, chars_wr;
 	struct sockaddr_in servAddr;
-	char buffer[MAX_BUFFER]; //have buffer for proc data
+	char buffer[1024]; //have buffer for proc data
 	char ciphertext[MAX_BUFFER]; //string to store result cipher from server
 	int reuse = 1; //create reusable socket
 
@@ -64,14 +64,7 @@ int main(int argc, const char* argv[]) {
 	memset(buffer, '\0', sizeof(buffer)); //clr buffer again
 	chars_wr = 0; //set written char counter back to 0
 
-	//wait for signal from server
-	chars_rd = 0;
-	while(chars_rd == 0){
-		chars_rd = recv(socketFD, buffer, sizeof(buffer) - 1, 0);
-	}
-
-	if(strcmp(buffer, "start") == 0){
-		//store plaintext length in buffer (since key and plaintext should be same len)
+	//store plaintext length in buffer (since key and plaintext should be same len)
 		sprintf(buffer, "%d", pt_len); //use sprintf to copy len to buffer, since strcpy won't work on a cleared string
 	
 		//send length to server
@@ -84,6 +77,14 @@ int main(int argc, const char* argv[]) {
 		chars_wr = 0;
 		chars_rd = 0;
 
+
+	//wait for signal from server
+	chars_rd = 0;
+	while(chars_rd == 0){
+		chars_rd = recv(socketFD, buffer, sizeof(buffer) - 1, 0);
+	}
+
+	if(strcmp(buffer, "start") == 0){
 		//Once file length is sent, send plaintext to server
 		int fd = open(argv[1], 'r');
 		if(fd == -1){
@@ -93,12 +94,9 @@ int main(int argc, const char* argv[]) {
 		while(chars_wr <= pt_len){ //keep in a loop to get all chars sent
 			chars_rd = read(fd, buffer, strlen(buffer) -1);
 			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data to serv
-			if(chars_wr < 0){
-				error("CLIENT: ERROR cannot write to server \n");
-			}
+			memset(buffer, '\0', 1024); //clear buffer, load in chunks
 		}
-
-		memset(buffer, '\0', sizeof(buffer)); //you know the drill, clear the buffer and counters
+		memset(buffer, '\0', sizeof(buffer)); //clear again
 		chars_wr = 0;
 		chars_rd = 0;
 
@@ -109,9 +107,7 @@ int main(int argc, const char* argv[]) {
 		while(chars_wr <= kt_len){
 			chars_rd = read(fd, buffer, strlen(buffer) - 1); //read data into buffer
 			chars_wr += send(socketFD, buffer, strlen(buffer), 0); //send data
-			if(chars_wr < 0){
-				error("CLIENT: ERROR cannot write to server \n");
-			}
+			memset(buffer, '\0', 1024);
 		}
 
 	}
@@ -128,6 +124,7 @@ int main(int argc, const char* argv[]) {
 			error("CLIENT: ERROR cannot read from server \n");
 		}
 		strcat(ciphertext, buffer);
+		memset(buffer, '\0', 1024); //clear buffer
 	}
 	strcat(ciphertext, "\n"); //add newline char at end of ciphertext for printing
 

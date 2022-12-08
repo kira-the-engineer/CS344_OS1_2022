@@ -52,7 +52,7 @@ int main(int argc, const char *argv[]){
 			} //eo case -1
 			case 0: { //if we actually spawned a child properly
 				//create strings for recieved data from client
-				char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
+				char recvbuf[1024]; //create buffer for rx'd data
 				char encryptmsg[MAX_BUFFER] = {0, }; //create string to store encrypted message
 				char plaintxt[MAX_BUFFER]; //store plaintext
 				char keytxt[MAX_BUFFER]; //store key
@@ -83,20 +83,21 @@ int main(int argc, const char *argv[]){
 						error("SERVER: ERROR cannot write to client \n");
 			      		} //eo if
 			
-			     		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
+			     		memset(recvbuf, '\0' , sizeof(recvbuf)); //clear buffer
 			     		chars_rd = 0; //reset chars read count
-\
+
 			     		while(chars_rd == 0) { //read file size
 				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
 				    		if(chars_rd < 0){
 							close(connectSock);
 					 		error("SERVER: ERROR cannot read from client \n");
 				    		} //eo if
+						memset(recvbuf, '\0', 1024); //clear
 			     		} //eo while
 			     		int flen = atoi(recvbuf); //get file length as an int
 
 			     		chars_rd = 0; //reset chars cnt
-			     		memset(recvbuf, 0, MAX_BUFFER); //clr buffer
+			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clr buffer
 
 
 					//Once file length has been sent, signal to client to start sending file data
@@ -104,35 +105,25 @@ int main(int argc, const char *argv[]){
 
 					//clear!
 					chars_rd = 0;
-					memset(recvbuf, 0, MAX_BUFFER);
+					memset(recvbuf, '\0', sizeof(recvbuf));
 
 			     		//start by recieving plaintext
 			     		while(chars_rd < flen){
-			         		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client 
-				 		if(chars_rd < 0) {
-							close(connectSock);
-							error("SERVER: ERROR cannot read from client \n");
-				 		} //eo if
-				 		else {
-							strcat(plaintxt, recvbuf);
-				 		} //eo else
+			         		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
+						strcat(plaintxt, recvbuf);
+						memset(recvbuf, '\0', 1024);
 			     		} //eo plaintext loop
 
-			     		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
+			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
 			     		chars_rd = 0; //reset char cnt
 
 			     		while(chars_rd < flen){
-				 		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client 
-				 		if(chars_rd < 0) {
-							close(connectSock);
-							error("SERVER: ERROR cannot read from client \n");
-				 		} //eo if
-				 		else {
-							strcat(keytxt, recvbuf);
-				 		} //eo else
+				 		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client 
+				 		strcat(keytxt, recvbuf);
+						memset(recvbuf, '\0', 1024);
 			     		} //eo key loop
 
-			    		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
+			    		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
 
 			    		//call encryption func
 					encrypt(encryptmsg, plaintxt, keytxt);
@@ -140,11 +131,12 @@ int main(int argc, const char *argv[]){
 			   
 			    		//send ecrypted text back to client
 					chars_rd = 0; //clear chars rd
-					chars_rd = send(connectSock, encryptmsg, encryptlen, 0);
-					if(chars_rd < 0) {
-						close(connectSock);
-						error("SERVER: ERROR cannot write to client \n");
-			      		} //eo if
+					memset(recvbuf, '\0', sizeof(recvbuf));
+					while(chars_rd < encryptlen){
+						chars_rd += send(connectSock, encryptmsg, encryptlen, 0);
+						memset(recvbuf, '\0', 1024);
+					}
+					memset(recvbuf, '\0', sizeof(recvbuf));
 		 	    		exit(0);
 				} //eo inner else
 			} //eo case 0
