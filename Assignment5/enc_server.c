@@ -3,7 +3,7 @@
 int main(int argc, char *argv[]){
 	//The below code makes liberal use of Beej's example stream socket
 	//https://beej.us/guide/bgnet/html/#a-simple-stream-server
-	int connectSock, listenSock, chars_rd = 0; /* listen on listenSock, new conn on connectSock */
+	int connectSock, listenSock, status, chars_rd = 0; /* listen on listenSock, new conn on connectSock */
 	struct sockaddr_in serv_addr, cli_addr;
 	socklen_t size_of_cli_info;
 	pid_t pid; //pid for child process
@@ -47,67 +47,105 @@ int main(int argc, char *argv[]){
 
 		//Below code follows Beej's Stream Server example, uses a child process to handle encoding data
 		pid = fork(); //fork that process!
-		if(pid == -1){ //if fork was unsuccessful
-			close(listenSock); //stop listening for incoming conns
-			error("SERVER: ERROR could not fork process \n");
-			continue;
-		} //eo if
-		else{ //if we actually spawned a child properly
-			//create strings for recieved data from client
-			char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
-			char encryptmsg[MAX_BUFFER]; //create string to store encrypted message
-			char plaintxt[MAX_BUFFER]; //store plaintext
-			char keytxt[MAX_BUFFER]; //store key
+		switch(pid){
+			case -1: { //if fork was unsuccessful
+				close(listenSock); //stop listening for incoming conns
+				error("SERVER: ERROR could not fork process \n");
+				continue;
+			} //eo case -1
+			case 0: { //if we actually spawned a child properly
+				//create strings for recieved data from client
+				char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
+				char encryptmsg[MAX_BUFFER]; //create string to store encrypted message
+				char plaintxt[MAX_BUFFER]; //store plaintext
+				char keytxt[MAX_BUFFER]; //store key
 
-			//init buffer to 0 with memset
-			memset(recvbuf, '\0', sizeof(recvbuf));
+				//init buffer to 0 with memset
+				memset(recvbuf, '\0', sizeof(recvbuf));
 
-			//read the client's handshake first to ensure we conn to right server
-			while(chars_rd == 0){
-				chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx handshake msg
-				if(chars_rd < 0) { //make sure we actually read from connected client properly
-					error("SERVER: ERROR cannot read from client \n");
-					close(connectSock);
-					exit(1);
-				} //eo if
-			} //eo while
+				//read the client's handshake first to ensure we conn to right server
+				while(chars_rd == 0){
+					chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx handshake msg
+					if(chars_rd < 0) { //make sure we actually read from connected client properly
+						error("SERVER: ERROR cannot read from client \n");
+						close(connectSock);
+						exit(1);
+					} //eo if
+				} //eo while
 
-			//verify handshake message against defined message
-			if(strcmp(recvbuf, ENC_CONFIRM_MSG) != 0){ //if the wrong client connects by accident
-				printf("SERVER: Client handshake message does not match \n");
-				chars_rd = send(connectSock, BAD_SERV, 7, 0); //send rejection message to client
-				if(chars_rd < 0) {
-					error("SERVER: ERROR cannot write to client \n");
-					close(connectSock);
+				//verify handshake message against defined message
+				if(strcmp(recvbuf, ENC_CONFIRM_MSG) != 0){ //if the wrong client connects by accident
+					printf("SERVER: Client handshake message does not match \n");
+					chars_rd = send(connectSock, BAD_SERV, 7, 0); //send rejection message to client
+					if(chars_rd < 0) {
+						error("SERVER: ERROR cannot write to client \n");
+						close(connectSock);
+						exit(2);
+					} //eo inner if
 					exit(2);
-				} //eo inner if
-				exit(2);
-			} //eo outer if
-			else { //right client connected
-			      printf("SERVER: Connected to correct client \n");
-			      chars_rd = send(connectSock, CORRECT_SERV, 7, 0); //send accept message to client
-			      if(chars_rd < 0) {
-					error("SERVER: ERROR cannot write to client \n");
-					close(connectSock);
-					exit(2);
-			      } //eo if
+				} //eo outer if
+				else { //right client connected
+			      		printf("SERVER: Connected to correct client \n");
+			      		chars_rd = send(connectSock, CORRECT_SERV, 7, 0); //send accept message to client
+			      		if(chars_rd < 0) {
+						error("SERVER: ERROR cannot write to client \n");
+						close(connectSock);
+						exit(2);
+			      		} //eo if
 			
-			     memset(recvbuf, 0, MAX_BUFFER); //clear buffer
-			     chars_rd = 0; //reset chars read count
+			     		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
+			     		chars_rd = 0; //reset chars read count
 
-			     while(chars_rd == 0) { //read file size
-				    chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
-				    if(chars_rd < 0){
-					 error("SERVER: ERROR cannot read from client \n");
-				    } //eo if
-			     } //eo while
-			     int flen = atoi(recvbuf); //get file length as an int
+			     		while(chars_rd == 0) { //read file size
+				    		chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //rx file len from client
+				    		if(chars_rd < 0){
+					 	error("SERVER: ERROR cannot read from client \n");
+				    		} //eo if
+			     		} //eo while
+			     		int flen = atoi(recvbuf); //get file length as an int
 
-			     chars_rd = 0; //reset chars cnt
-			     memset(recvbuf, 0, MAX_BUFFER); //clr buffer
+			     		chars_rd = 0; //reset chars cnt
+			     		memset(recvbuf, 0, MAX_BUFFER); //clr buffer
 
-			} //eo else
+			     		//start by recieving plaintext
+			     		while(chars_rd < flen){
+			         		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client 
+				 		if(chars_rd < 0) {
+							error("SERVER: ERROR cannot read from client \n");
+				 		} //eo if
+				 		else {
+							strcat(plaintxt, recvbuf);
+				 		} //eo else
+			     		} //eo plaintext loop
 
-		} //eo while
+			     		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
+			     		chars_rd = 0; //reset char cnt
 
+			     		while(chars_rd < flen){
+				 		chars_rd += recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client 
+				 		if(chars_rd < 0) {
+							error("SERVER: ERROR cannot read from client \n");
+				 		} //eo if
+				 		else {
+							strcat(keytxt, recvbuf);
+				 		} //eo else
+			     		} //eo key loop
+
+			    		memset(recvbuf, 0, MAX_BUFFER); //clear buffer
+
+			    		//call encryption func
+			   
+			    		//send ecrypted text back to client
+		 	    		exit(0);
+				} //eo inner else
+			} //eo case 0
+			default: {
+				pid_t actual = waitpid(pid, &status, WNOHANG);
+			}    
+		} //eo switch
+		close(connectSock); //close connection to client
+	} //eo while
+	
+	close(listenSock); //close listener socket
+	return 0;
 } //eo main
