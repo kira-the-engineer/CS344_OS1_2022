@@ -105,6 +105,9 @@ int main(int argc, const char* argv[]) {
 		if(sendall(socketFD, buffer, &pt_len) == -1){
 			error("CLIENT: ERROR cannot write to server\n");
 		}
+
+		//read key file
+		charbychar(keytext, argv[2]);
 	
 		//clear
 		memset(buffer, '\0', strlen(buffer));
@@ -121,13 +124,14 @@ int main(int argc, const char* argv[]) {
 	chars_wr = 0;
 	chars_rd = 0;
 
+	/*
 	//Last thing the client needs to do, get ciphertext from server
 	if(readall(socketFD, ciphertext, pt_len) == -1){
 		error("CLIENT: ERROR cannot read from server \n");
 	}
 
 	printf("%s", ciphertext);
-
+	*/
 	close(socketFD);
 
 	return 0;
