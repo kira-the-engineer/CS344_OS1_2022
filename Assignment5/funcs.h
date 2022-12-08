@@ -27,3 +27,5 @@ void encrypt(char* result, char* plaintext, char* keytext);
 int char_2_int(char c);
 char int_2_char(int i);
 long validCount(const char* fd);
+void charbychar(char*, const char*);
+int sendall(int sock, char* buf, long* len); //from beej's sockets tutorial

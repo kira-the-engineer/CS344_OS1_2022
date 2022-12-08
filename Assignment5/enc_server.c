@@ -52,7 +52,7 @@ int main(int argc, const char *argv[]){
 			} //eo case -1
 			case 0: { //if we actually spawned a child properly
 				//create strings for recieved data from client
-				char recvbuf[1024]; //create buffer for rx'd data
+				char recvbuf[MAX_BUFFER]; //create buffer for rx'd data
 				char encryptmsg[MAX_BUFFER] = {0, }; //create string to store encrypted message
 				char plaintxt[MAX_BUFFER]; //store plaintext
 				char keytxt[MAX_BUFFER]; //store key
@@ -90,7 +90,6 @@ int main(int argc, const char *argv[]){
 					chars_rd = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0);
 					if(chars_rd < 0){error("SERVER: ERROR cannot read from client \n");}
 			     		int flen = atoi(recvbuf); //get file length as an int
-					printf("Filelen: %d\n", flen);
 
 			     		chars_rd = 0; //reset chars cnt
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clr buffer
@@ -111,24 +110,26 @@ int main(int argc, const char *argv[]){
 
 			     		//start by recieving plaintext
 					int byteread = 0;
-					memset(recvbuf, '\0', 1024); //clear buffer
-			         	byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve plaintext from client
-					if(byteread < 0) {error("SERVER: ERROR cannot read from client\n");}
-					printf("rxd %d chars \n", byteread);
-					printf("Rxd all plaintext \n");
-
-			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
-			     		chars_rd = 0; //reset char cnt
-					byteread = 0; //reset byte counter
-
-/*
-			     		while(chars_rd < flen){
-						memset(recvbuf, '\0', 1024); //clear buffer
+					while(chars_rd < flen){
+						memset(recvbuf, '\0', MAX_BUFFER); //clear buffer
 				 		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client
 						chars_rd += byteread; //add to total
 						byteread = 0; //reset for next chunk of data
 				 		strcat(keytxt, recvbuf);
-						memset(recvbuf, '\0', 1024);
+						memset(recvbuf, '\0', MAX_BUFFER);
+					}
+
+			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
+			     		chars_rd = 0; //reset char cnt
+
+/*
+			     		while(chars_rd < flen){
+						memset(recvbuf, '\0', MAX_BUFFER); //clear buffer
+				 		byteread = recv(connectSock, recvbuf, sizeof(recvbuf) - 1, 0); //recieve keytext from client
+						chars_rd += byteread; //add to total
+						byteread = 0; //reset for next chunk of data
+				 		strcat(keytxt, recvbuf);
+						memset(recvbuf, '\0', MAX_BUFFER);
 			     		} //eo key loop
 					printf("Rxd all keytext \n");
 
@@ -144,9 +145,9 @@ int main(int argc, const char *argv[]){
 					chars_rd = 0; //clear chars rd
 					memset(recvbuf, '\0', sizeof(recvbuf));
 					while(chars_rd < encryptlen){
-						memset(recvbuf, '\0', 1024);
+						memset(recvbuf, '\0', MAX_BUFFER);
 						chars_rd += send(connectSock, encryptmsg, sizeof(encryptmsg), 0);
-						memset(recvbuf, '\0', 1024);
+						memset(recvbuf, '\0', MAX_BUFFER);
 					}
 					memset(recvbuf, '\0', sizeof(recvbuf));
 */

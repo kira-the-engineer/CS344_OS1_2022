@@ -27,11 +27,30 @@ void charbychar(char* result, const char* filename){
 	}
 
 	for(c = getc(fp); c != EOF && c != '\n'; c = getc(fp)){ //use for loop instead to get through data
-		result[count++];
+		result[count++] = c;
 	}
 	result[count] = '\0'; //add null term on end
 }
 
+//Send all function from Beej's socket tuts
+
+int sendall(int s, char *buf, long *len)
+{
+    int total = 0;        // how many bytes we've sent
+    int bytesleft = *len; // how many we have left to send
+    int n;
+
+    while(total < *len) {
+        n = send(s, buf+total, bytesleft, 0);
+        if (n == -1) { break; }
+        total += n;
+        bytesleft -= n;
+    }
+
+    *len = total; // return number actually sent here
+
+    return n==-1?-1:0; // return -1 on failure, 0 on success
+} 
 
 // func for setting up addr struct from example server/cli on 344 replit
 // modified to check whether we need to create addr struct for serv
