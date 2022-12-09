@@ -125,9 +125,10 @@ int main(int argc, const char *argv[]){
 					strcat(keytxt, "\n");	     			
 
 			    		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
-					//printf("Plaintext rx'd: %s\n", plaintxt);
-					//printf("Keytext rx'd: %s\n", keytxt);
+					printf("Plaintext rx'd: %s\n", plaintxt);
+					printf("Keytext rx'd: %s\n", keytxt);
 
+					/*
 			    		//call encryption func
 					encrypt(encryptmsg, plaintxt, keytxt);
 					long encryptlen = strlen(encryptmsg); //get length of fully encrypted string
@@ -135,6 +136,7 @@ int main(int argc, const char *argv[]){
 					if(sendall(connectSock, encryptmsg, &encryptlen) == -1){
 						error("SERVER: ERROR Cannot write to client \n");
 					}
+					*/
 		 	    		exit(0);
 				} //eo inner else
 			} //eo case 0
