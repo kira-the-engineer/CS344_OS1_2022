@@ -7,7 +7,7 @@ int main(int argc, const char* argv[]) {
 	char buffer[MAX_BUFFER]; //have buffer for proc data
 	char plaintext[MAX_BUFFER];
 	char keytext[MAX_BUFFER];
-	char ciphertext[MAX_BUFFER]; //string to store result cipher from server
+	char *ciphertext; //string to store result cipher from server
 	int reuse = 1; //create reusable socket
 
 	// Check usage & args
@@ -124,15 +124,16 @@ int main(int argc, const char* argv[]) {
 	chars_wr = 0;
 	chars_rd = 0;
 
-	/*
 	//Last thing the client needs to do, get ciphertext from server
-	if(readall(socketFD, ciphertext, pt_len) == -1){
+	long cipherlen = pt_len + 1;
+	ciphertext = calloc(cipherlen, sizeof(char));
+	if(readall(socketFD, ciphertext, cipherlen) == -1){
 		error("CLIENT: ERROR cannot read from server \n");
 	}
 
 	printf("%s", ciphertext);
-	*/
 	close(socketFD);
+	free(ciphertext);
 
 	return 0;
 }
