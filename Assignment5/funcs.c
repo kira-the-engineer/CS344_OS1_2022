@@ -131,11 +131,10 @@ void encrypt(char* result, char* plaintxt, char* key){
 	int i = 0;
 	int enc;
 
-	while(plaintxt[i] != '\0'){ //loop for len of plaintxt
+	while(plaintxt[i] != '\n'){ //loop for len of plaintxt
 		enc = (char_2_int(plaintxt[i]) + char_2_int(key[i])) % 27; //get new int for encoded char
 		result[i++] = int_2_char(enc); //place encoded char in result message
 	}
-	result[i++] = '\n'; //add newline
 	result[i] = '\0'; //add null term to end
 }
 
@@ -144,7 +143,7 @@ void encrypt(char* result, char* plaintxt, char* key){
  ****************************************************************************/
 void decrypt(char* dmsg, char* emsg, char* key) {
     int dec, i = 0;
-    while (emsg[i] != '\0') {
+    while (emsg[i] != '\n') {
         // Convert characters to integers
         dec = char_2_int(emsg[i]) - char_2_int(key[i]); //get decoded char
         if (dec < 0) { // Handle negative case
@@ -152,7 +151,6 @@ void decrypt(char* dmsg, char* emsg, char* key) {
         }
         dmsg[i++] = int_2_char(dec);
     }
-    dmsg[i++] = '\n';
     dmsg[i] = '\0';
 }
 

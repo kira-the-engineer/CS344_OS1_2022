@@ -111,7 +111,7 @@ int main(int argc, const char* argv[]) {
 		chars_wr = 0;
 		memset(buffer, '\0', strlen(buffer)); //clear out buffer
 		strcat(buffer, keytext); //copy plaintext to buffer
-		while(chars_wr <= kt_len){
+		while(chars_wr <= pt_len){
 			chars_wr += send(socketFD, buffer, sizeof(buffer)-1, 0);
 			if(chars_wr < 0){error("SERVER: ERROR cannot write to client \n");}
 			memset(buffer, '\0', strlen(buffer)); //clear buffer between sends 
@@ -125,7 +125,7 @@ int main(int argc, const char* argv[]) {
 	chars_rd = 0;
 
 	//Last thing the client needs to do, get ciphertext from server
-	long cipherlen = pt_len + 1;
+	long cipherlen = pt_len;
 	ciphertext = calloc(cipherlen, sizeof(char));
 	if(readall(socketFD, ciphertext, cipherlen) == -1){
 		error("CLIENT: ERROR cannot read from server \n");
