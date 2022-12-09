@@ -1,7 +1,9 @@
-all: funcs.o keygen.o enc_server.o enc_client.o
+all: funcs.o keygen.o enc_server.o enc_client.o dec_server.o dec_client.o
 	cc -o keygen keygen.o funcs.o
 	cc -o enc_server enc_server.o funcs.o
 	cc -o enc_client enc_client.o funcs.o
+	cc -o dec_client dec_client.o funcs.o
+	cc -o dec_server dec_server.o funcs.o
 
 funcs: funcs.h funcs.c
 	cc - c funcs.c
