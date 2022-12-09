@@ -90,8 +90,9 @@ int main(int argc, const char* argv[]) {
 	if(strcmp(buffer, "start") == 0){
 		//Once file length is sent, send plaintext to server
 
-		//read plaintext file char by char into storage array
+		//read files char by char into arrays
 		charbychar(plaintext, argv[1]);
+		charbychar(keytext, argv[2]);
 
 		//reset counters
 		chars_wr = 0;
