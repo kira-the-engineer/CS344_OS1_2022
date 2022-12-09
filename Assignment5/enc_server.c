@@ -70,7 +70,7 @@ int main(int argc, const char *argv[]){
 				}//eo if
 
 				//verify handshake message against defined message
-				if(strcmp(recvbuf, ENC_CONFIRM_MSG) != 0 || strcmp(recvbuf, DEC_CONFIRM_MSG) == 0){ //if the wrong client connects by accident
+				if(strcmp(recvbuf, ENC_CONFIRM_MSG) != 0){ //if the wrong client connects by accident
 					fprintf(stderr, "SERVER: Client handshake message does not match \n");
 					chars_rd = send(connectSock, BAD_SERV, 7, 0); //send rejection message to client
 					exit(2);
@@ -148,3 +148,4 @@ int main(int argc, const char *argv[]){
 	close(listenSock); //close listener socket
 	return 0;
 } //eo main
+
