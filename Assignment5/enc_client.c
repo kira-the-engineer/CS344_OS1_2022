@@ -119,7 +119,6 @@ int main(int argc, const char* argv[]) {
 
 	}
 
-	/*	
 	//clear!
 	memset(buffer, '\0', sizeof(buffer));
 	chars_wr = 0;
@@ -131,7 +130,6 @@ int main(int argc, const char* argv[]) {
 	}
 
 	printf("%s", ciphertext);
-	*/
 	close(socketFD);
 
 	return 0;

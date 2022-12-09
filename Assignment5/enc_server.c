@@ -76,7 +76,7 @@ int main(int argc, const char *argv[]){
 					exit(2);
 				} //eo outer if
 				else { //right client connected
-			      		printf("SERVER: Connected to correct client \n");
+			      		//printf("SERVER: Connected to correct client \n");
 			      		chars_rd = send(connectSock, CORRECT_SERV, 7, 0); //send accept message to client
 			      		if(chars_rd < 0) {
 						close(connectSock);
@@ -125,20 +125,16 @@ int main(int argc, const char *argv[]){
 					strcat(keytxt, "\n");	     			
 
 			    		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
-					printf("Plaintext rx'd: %s\n", plaintxt);
-					printf("Keytext rx'd: %s\n", keytxt);
+					//printf("Plaintext rx'd: %s\n", plaintxt);
+					//printf("Keytext rx'd: %s\n", keytxt);
 
-					
-					/*
 			    		//call encryption func
 					encrypt(encryptmsg, plaintxt, keytxt);
 					long encryptlen = strlen(encryptmsg); //get length of fully encrypted string
-			   
-			    		//send ecrypted text back to client
-					if ((sendall(connectSock, encryptmsg, &encryptlen)) == -1) {
-						error("SERVER: ERROR Cannot write to client\n");
-                			}
-					*/
+			
+					if(sendall(connectSock, encryptmsg, &encryptlen) == -1){
+						error("SERVER: ERROR Cannot write to client \n");
+					}
 		 	    		exit(0);
 				} //eo inner else
 			} //eo case 0
