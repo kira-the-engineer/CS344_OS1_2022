@@ -7,7 +7,7 @@ int main(int argc, const char* argv[]) {
 	char buffer[MAX_BUFFER]; //have buffer for proc data
 	char enctext[MAX_BUFFER];
 	char keytext[MAX_BUFFER];
-	char plaintext[MAX_BUFFER]; //string to store decoded result from server
+	char *decodedtext; //string to store result cipher from server
 	int reuse = 1; //create reusable socket
 
 	// Check usage & args
@@ -90,33 +90,33 @@ int main(int argc, const char* argv[]) {
 	if(strcmp(buffer, "start") == 0){
 		//Once file length is sent, send enctext to server
 
-		//read enctext file char by char into storage array
+		//read files char by char into arrays
 		charbychar(enctext, argv[1]);
+		charbychar(keytext, argv[2]);
 
 		//reset counters
 		chars_wr = 0;
 		chars_rd = 0;
 
-		//send file to server
-		//function called below is an example from beej's socket programming tutorials
+		//send enctext file to server
 		memset(buffer, '\0', strlen(buffer)); //clear out buffer
 		strcat(buffer, enctext); //copy enctext to buffer
-		strcat(buffer, "\n"); //add newline
-		if(sendall(socketFD, buffer, &et_len) == -1){
-			error("CLIENT: ERROR cannot write to server\n");
+		while(chars_wr <= et_len){
+			chars_wr += send(socketFD, buffer, sizeof(buffer)-1, 0);
+			if(chars_wr < 0){error("SERVER: ERROR cannot write to client \n");}
+			memset(buffer, '\0', strlen(buffer)); //clear buffer between sends 
 		}
 
-		//read key file
-		charbychar(keytext, argv[2]);
-	
-		//clear
-		memset(buffer, '\0', strlen(buffer));
-		strcat(buffer, keytext);
-		strcat(buffer, "\n");
-		//send key to server
-		if(sendall(socketFD, buffer, &et_len) == -1){
-			error("CLIENT: ERROR cannot write to server\n");
+		//do it again for key text
+		chars_wr = 0;
+		memset(buffer, '\0', strlen(buffer)); //clear out buffer
+		strcat(buffer, keytext); //copy enctext to buffer
+		while(chars_wr <= et_len){
+			chars_wr += send(socketFD, buffer, sizeof(buffer)-1, 0);
+			if(chars_wr < 0){error("SERVER: ERROR cannot write to client \n");}
+			memset(buffer, '\0', strlen(buffer)); //clear buffer between sends 
 		}
+
 	}
 
 	//clear!
@@ -124,15 +124,16 @@ int main(int argc, const char* argv[]) {
 	chars_wr = 0;
 	chars_rd = 0;
 
-	/*
-	//Last thing the client needs to do, get plaintext from server
-	if(readall(socketFD, plaintext, et_len) == -1){
+	//Last thing the client needs to do, get decoded text from server
+	long cipherlen = et_len;
+	decodedtext = calloc(cipherlen, sizeof(char));
+	if(readall(socketFD, decodedtext, cipherlen) == -1){
 		error("CLIENT: ERROR cannot read from server \n");
 	}
 
-	printf("%s", plaintext);
-	*/
+	printf("%s", decodedtext);
 	close(socketFD);
+	free(decodedtext);
 
 	return 0;
 }
