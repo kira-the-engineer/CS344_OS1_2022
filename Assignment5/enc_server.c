@@ -115,19 +115,20 @@ int main(int argc, const char *argv[]){
 
 					strcat(plaintxt, recvbuf);
 					strcat(plaintxt, "\n");
-					printf("Plaintext rx'd: %s\n", plaintxt);
-
 			     		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
+
+					//RX key
 			     		if(readall(connectSock, recvbuf, MAX_BUFFER) == -1){
 						error("SERVER: ERROR cannot read from client\n");
 					}
 					strcat(keytxt, recvbuf);
 					strcat(keytxt, "\n");	     			
-					printf("Keytext rx'd: %s\n", keytxt);
 
 			    		memset(recvbuf, '\0', sizeof(recvbuf)); //clear buffer
+					printf("Plaintext rx'd: %s\n", plaintxt);
+					printf("Keytext rx'd: %s\n", keytxt);
 
-
+					
 					/*
 			    		//call encryption func
 					encrypt(encryptmsg, plaintxt, keytxt);

@@ -97,34 +97,33 @@ int main(int argc, const char* argv[]) {
 		chars_wr = 0;
 		chars_rd = 0;
 
-		//send file to server
-		//function called below is an example from beej's socket programming tutorials
+		//send plaintext file to server
 		memset(buffer, '\0', strlen(buffer)); //clear out buffer
 		strcat(buffer, plaintext); //copy plaintext to buffer
-		strcat(buffer, "\n"); //add newline
-		if(sendall(socketFD, buffer, &pt_len) == -1){
-			error("CLIENT: ERROR cannot write to server\n");
+		while(chars_wr <= pt_len){
+			chars_wr += send(socketFD, buffer, sizeof(buffer)-1, 0);
+			if(chars_wr < 0){error("SERVER: ERROR cannot write to client \n");}
+			memset(buffer, '\0', strlen(buffer)); //clear buffer between sends 
 		}
 
-		//read key file
-		charbychar(keytext, argv[2]);
-	
-		//clear
-		memset(buffer, '\0', strlen(buffer));
-		strcat(buffer, keytext);
-		strcat(buffer, "\n");
-		//send key to server
-		if(sendall(socketFD, buffer, &pt_len) == -1){
-			error("CLIENT: ERROR cannot write to server\n");
+		//do it again for key text
+		chars_wr = 0;
+		memset(buffer, '\0', strlen(buffer)); //clear out buffer
+		strcat(buffer, plaintext); //copy plaintext to buffer
+		while(chars_wr <= pt_len){
+			chars_wr += send(socketFD, buffer, sizeof(buffer)-1, 0);
+			if(chars_wr < 0){error("SERVER: ERROR cannot write to client \n");}
+			memset(buffer, '\0', strlen(buffer)); //clear buffer between sends 
 		}
+
 	}
 
+	/*	
 	//clear!
 	memset(buffer, '\0', sizeof(buffer));
 	chars_wr = 0;
 	chars_rd = 0;
 
-	/*
 	//Last thing the client needs to do, get ciphertext from server
 	if(readall(socketFD, ciphertext, pt_len) == -1){
 		error("CLIENT: ERROR cannot read from server \n");
